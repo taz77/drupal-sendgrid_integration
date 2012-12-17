@@ -13,7 +13,7 @@
 function sendgrid_integration_menu() {
   $items = array();
 
-  $items['admin/config/system/sendgrid'] = array(
+  $items['admin/settings/sendgrid'] = array(
     'title' => 'SendGrid settings',
     'description' => 'SendGrid Integration settings',
     'page callback' =>'drupal_get_form',
@@ -30,10 +30,7 @@ function sendgrid_integration_menu() {
  */
 function sendgrid_integration_permission() {
   return array(
-    'administer sendgrid settings' => array(
-      'title' => t('Administer SendGrid settings'),
-      'description' => t('Configure SendGrid options like username and password'),
-    ),
+    'administer sendgrid settings',
   );
 }
 
@@ -78,113 +75,138 @@ function sendgrid_integration_admin() {
   return system_settings_form($form);
 }
 
-/**
- * Implements hook_help().
- */
-function sendgrid_integration_help($path, $arg) {
-  $output = '';
-  switch ($path) {
-    case 'admin/help#sendgrid_integration':
-      $output .= '<h3>' . t('SendGrid Integration') . '</h3>';
-      $output .= '<p>' . t('Module provides own implementation of MailSystemIntegration, replacing the default implementation and uses SendGrid Web API instead.') . '</p>';
+function sendgrid_integration_drupal_mail_wrapper($message) {
+
+  // SendGrid authentication information.
+  if(variable_get('sendgrid_integration_ssl', TRUE) == TRUE) {
+    $protocol = 'https://';
   }
-  return $output;
-}
+  else {
+    $protocol = 'http://';
+  }
 
-/**
- * Implements hook_cron_queue_info().
- */
-function sendgrid_integration_cron_queue_info() {
-  $queues = array();
-  $queues['SendGridResendQueue'] = array(
-    'worker callback' => 'sendgrid_integration_email_resend',
-    'time' => 60,
-  );
-
-  return $queues;
-}
-
-/**
- * Cron queue worker callback function.
- * Tries to send email again, if it previously failed with good reason.
- */
-function sendgrid_integration_email_resend($message) {
-  // Defining parameters first to improve code readability.
-  $module = $message['module'];
-  $key = $message['key'];
-  $to = $message['to'];
-  $language = $message['language'];
-  $params = $message['params'];
-  $from = $message['from'];
-  $send = $message['send'];
-
-  drupal_mail($module, $key, $to, $language, $params, $from, $send);
-}
-
-/**
- * Get list of bounced emails.
- *
- * @param string $start_date
- * Start date in format of YYYY-MM-DD.
- *
- * @param date $end_date
- * End date in format of YYYY-MM-DD.
- *
- * @param string $type
- * Optional type, either 'hard' or 'soft'.
- *
- * @param string $email
- * Optional email address used to searching for.
- *
- * @return array
- * List of bounces.
- */
-function sendgrid_integration_get_bounces($start_date, $end_date, $type = NULL, $email = NULL) {
-  // Connection url for bounces.
-  $server = "https://sendgrid.com/api/bounces.get.json";
+  $server = $protocol . 'sendgrid.com/api/mail.send.json';
   $user = variable_get('sendgrid_integration_username', '');
   $key = variable_get('sendgrid_integration_apikey', '');
 
-  if (isset($start_date) == FALSE || isset($end_date) == FALSE) {
-    watchdog('SendGrid Integration', 'Error on calling get_bounches: Missing date parameter', NULL, WATCHDOG_NOTICE, $link = NULL);
+  // Defining default unique args.
+  $unique_args = array(
+    'id' => $message['id'],
+  );
 
-    return array();
+  if (!empty($message['params']['account']->uid))
+    $unique_args['uid'] = $message['params']['account']->uid;
+
+  if (!empty($message['module']))
+    $unique_args['module'] = $message['module'];
+
+  // Allow other modules to modify unique arguments.
+  // @todo: invoking removed from d6 version.
+
+  // Check if we got any variable back
+  if(!empty($args)) {
+    $unique_args = $args;
   }
 
+  // SMTP API, we use these to identify messages.
+  $smtp_api = array(
+    'category' => variable_get('site_name', 'Drupal'),
+    'unique_args' => $unique_args,
+  );
+
+  // Data sended to sendgrid.
   $data = array(
-    'date' => 1,
-    'start_date' => $start_date,
-    'end_date' => $end_date,
     'api_user' => $user,
     'api_key' => $key,
+    'x-smtpapi' => sendgrid_json_encode($smtp_api),
+    'to' => $message['to'],
+    'subject' => $message['subject'],
   );
 
-  if (isset($type)) {
-    $data['type'] = $type;
+  // Checking if 'from' email-address already exist.
+  if (isset($message['from'])) {
+    $data['from'] = $message['from'];
+  }
+  else {
+    $data['from'] = variable_get('site_mail');
+    $data['fromname'] = variable_get('site_name');
   }
 
-  if (isset($email)) {
-    $data['email'] = $email;
+  // Check Content-Type of message body.
+  if (strpos($message['headers']['Content-Type'], 'text/plain') !== FALSE) {
+    // Message body is text/plain.
+    $data['text'] = drupal_wrap_mail(drupal_html_to_text($message['body']));
+  }
+  else {
+    $data['html'] = $message['body'];
   }
 
-  // Options for drupal_http_request.
-  $options = array(
-    'method' => 'GET',
-    'data' => http_build_query($data),
-    'timeout' => 30,
-    'headers' => array(
-      'Content-Type' => 'application/x-www-form-urlencoded',
-    ),
+  // Headers.
+  $headers = array(
+    'Content-Type' => 'application/x-www-form-urlencoded',
   );
 
-  $response = drupal_http_request($server, $options);
+  $result = drupal_http_request($server, $headers, 'POST', http_build_query($data), $retry = 3, $timeout = 20.0);
 
-  $list = drupal_json_decode($response->data);
-
-  // Check if server returned error messages
-  if (isset($list['error'])) {
-    watchdog('SendGrid Integration', 'Error while retrieving bounces list: %error', array('%error' => $list['error']), WATCHDOG_NOTICE, $link = NULL);
+  // Checking if we got any result data
+  // (connection didn't time out for example).
+  $result_data = array();
+  if (isset($result->data)) {
+    $result_data = json_decode($result->data, TRUE);
   }
 
-  return $list;
+  // Check if sending message succeeded.
+  if (isset($result_data['message'])) {
+    if ($result_data['message'] == 'success') {
+      return TRUE;
+    }
+  }
+
+  // Default response to message sending failed.
+  // Create log entry.
+  $errors = '';
+  if (isset($result_data['errors'])) {
+    foreach ($result_data['errors'] as $error) {
+      $errors .= $error . ' ';
+    }
+  }
+
+  $variables = array(
+    '%code' => $result->code,
+    '%msg' => $result->error,
+    '%errors' => $errors,
+  );
+  watchdog('SendGrid Integration', 'Email sending failed with %code/%msg. %errors', $variables, WATCHDOG_ERROR, $link = NULL);
+
+
+  return FALSE;
+
+}
+
+function drupal_mail_wrapper($message) {
+  return sendgrid_integration_drupal_mail_wrapper($message);
+}
+
+/**
+ * Helper function for json encoding
+ * @param $var
+ * @return string json encoded string
+ */
+function sendgrid_json_encode($var) {
+  // The PHP version cannot change within a request.
+  static $php530;
+
+  if (!isset($php530)) {
+    $php530 = version_compare(PHP_VERSION, '5.3.0', '>=');
+  }
+
+  if ($php530) {
+    // Encode <, >, ', &, and " using the json_encode() options parameter.
+    return json_encode($var, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+  }
+
+  // json_encode() escapes <, >, ', &, and " using its options parameter, but
+  // does not support this parameter prior to PHP 5.3.0.  Use a helper instead.
+  include_once drupal_get_path('module', 'sendgrid_integration') . '/json-encode.inc';
+  return sendgrid_json_encode_helper($var);
 }

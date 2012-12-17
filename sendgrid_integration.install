@@ -8,26 +8,16 @@
  * Implemenets hook_enable().
  */
 function sendgrid_integration_enable() {
-  variable_set('mail_system', array('default-system' => 'SendGridMailSystem'));
+  variable_set('smtp_library', drupal_get_filename('module', 'sendgrid_integration'));
 }
 
 /**
  * Implements hook_disable().
  */
 function sendgrid_integration_disable() {
-  variable_set('mail_system', array('default-system' => 'DefaultMailSystem'));
+  variable_del('smtp_library');
 }
 
-/**
- * Implements hook_install().
- */
-function sendgrid_integration_install() {
-  $t = get_t();
-  drupal_set_message($t("You can configure SendGrid settings under Administer > Configuration > !link",
-    array(
-      '!link' => l($t('SendGrid settings'), 'admin/config/system/sendgrid'))
-  ));
-}
 
 /**
  * Implements hook_uninstall().
