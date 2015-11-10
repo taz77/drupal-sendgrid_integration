@@ -86,6 +86,7 @@ function sendgrid_integration_drupal_mail_wrapper($message) {
   }
 
   $server = $protocol . 'api.sendgrid.com/mail.send.json';
+  // @todo This should use API keys.
   $user = variable_get('sendgrid_integration_username', '');
   $key = variable_get('sendgrid_integration_apikey', '');
 
