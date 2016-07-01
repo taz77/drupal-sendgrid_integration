@@ -43,7 +43,7 @@ class SendGridMailSystem implements MailSystemInterface {
       'raise_exceptions' => FALSE,
     ];
     // Create a new SendGrid object.
-    $sendgrid = new SendGrid($key_secret, $options);
+    $sendgrid = new SendGrid\Client($key_secret, $options);
     $sendgrid_message = new SendGrid\Email();
     $sitename = variable_get('site_name');
     // Defining default unique args.
