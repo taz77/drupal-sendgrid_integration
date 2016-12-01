@@ -130,6 +130,16 @@ class SendGridMailSystem implements MailSystemInterface {
     $cc_bcc_keys = ['cc', 'bcc'];
     $address_cc_bcc = [];
 
+    // use Sendgrid Templates if they have been set
+    if(!empty($message['sendgrid']['template_id'])) {
+      $sendgrid_message->setTemplateId($message['sendgrid']['template_id']);
+    }
+
+    // use Sendgrid Substitutions if they have been set
+    if (!empty($message['sendgrid']['substitutions'])) {
+      $sendgrid_message->setSubstitutions($message['sendgrid']['substitutions']);
+    }
+
     // Beginning of consolidated header parsing.
     foreach ($message['headers'] as $key => $value) {
       switch (drupal_strtolower($key)) {
