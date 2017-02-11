@@ -51,11 +51,11 @@ line and the use of Drush.
    This will download the Sendgrid API. It is important to use the --no-dev option so you
    do not download libraries that are used for development and testing only.
 
-2. Navigate to Modules and enable SendGrid Integration in the Mail category.
+3. Navigate to Modules and enable SendGrid Integration in the Mail category.
 
-3. Configure your SendGrid API-Key in admin/config/services/sendgrid
+4. Configure your SendGrid API-Key in admin/config/services/sendgrid
 
-4. Confirm that the mail system is setup to use Sendgrid for how you wish to run
+5. Confirm that the mail system is setup to use Sendgrid for how you wish to run
    you website. If you want it all to run through Sendgrid then you set the
    System-wide default MailSystemInterface class to "SendGridMailSystem". As an
    example, see this [image](https://www.drupal.org/files/issues/sengrid-integration-mailsystem-settings-example.png).
