@@ -8,14 +8,14 @@
  * Implemenets hook_enable().
  */
 function sendgrid_integration_enable() {
-  variable_set('mail_system', array('default-system' => 'SendGridMailSystem'));
+  variable_set('mail_system', ['default-system' => 'SendGridMailSystem']);
 }
 
 /**
  * Implements hook_disable().
  */
 function sendgrid_integration_disable() {
-  variable_set('mail_system', array('default-system' => 'DefaultMailSystem'));
+  variable_set('mail_system', ['default-system' => 'DefaultMailSystem']);
 }
 
 /**
@@ -24,11 +24,42 @@ function sendgrid_integration_disable() {
 function sendgrid_integration_install() {
   $t = get_t();
   drupal_set_message($t('You can configure SendGrid settings under Administer > Configuration > !link',
-    array(
-      '!link' => l($t('SendGrid settings'), 'admin/config/system/sendgrid')
-    )
+    [
+      '!link' => l($t('SendGrid settings'), 'admin/config/system/sendgrid'),
+    ]
   ));
 }
+
+/**
+ * Implements hook_requirements().
+ */
+function sendgrid_integration_requirements($phase) {
+  $requirements = [];
+  $apikey = variable_get('sendgrid_integration_apikey', NULL);
+  switch ($phase) {
+    case 'runtime':
+      if (empty($apikey)) {
+        $requirements['sendgrid_integration'] = [
+          'title' => t('SendGrid Integration Settings'),
+          'value' => t('API Key Not Set'),
+          'severity' => REQUIREMENT_ERROR,
+          'description' => t('You need to <a href="@url">add a SendGrid API Secret Key</a> for Drupal to be able to deliver mail through SendGrid Integration.', [
+            '@url' => l('admin/config/services/sendgrid'),
+          ]),
+        ];
+      }
+      else {
+        $requirements['sendgrid_integration'] = [
+          'title' => t('SendGrid Integration Settings'),
+          'severity' => REQUIREMENT_OK,
+          'value' => t('API Secret Key saved'),
+        ];
+      }
+      break;
+  }
+  return $requirements;
+}
+
 
 /**
  * Implements hook_uninstall().
