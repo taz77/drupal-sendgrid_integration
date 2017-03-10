@@ -120,6 +120,7 @@ function sendgrid_integration_admin() {
 
 /**
  * Validation function for admin settings.
+ *
  * @param $form
  * @param $form_state
  */
@@ -135,8 +136,10 @@ function sendgrid_integration_admin_validate($form, &$form_state) {
  *
  * We use a custom submit handler to only set variables if values are supplied
  * in the UI.
+ *
  * @param $form
  * @param $form_state
+ *
  * @return bool
  */
 function sendgrid_integration_admin_submit($form, $form_state) {
@@ -227,7 +230,7 @@ function sendgrid_integration_get_bounces($start_date, $end_date, $type = NULL, 
   $key = variable_get('sendgrid_integration_apikey', '');
 
   if (isset($start_date) == FALSE || isset($end_date) == FALSE) {
-    watchdog('SendGrid Integration', 'Error on calling get_bounches: Missing date parameter', NULL, WATCHDOG_NOTICE, $link = NULL);
+    watchdog('sendgrid_integration', 'Error on calling get_bounches: Missing date parameter', [], WATCHDOG_NOTICE);
 
     return [];
   }
@@ -264,7 +267,7 @@ function sendgrid_integration_get_bounces($start_date, $end_date, $type = NULL, 
 
   // Check if server returned error messages
   if (isset($list['error'])) {
-    watchdog('SendGrid Integration', 'Error while retrieving bounces list: %error', ['%error' => $list['error']], WATCHDOG_NOTICE, $link = NULL);
+    watchdog('sendgrid_integration ', 'Error while retrieving bounces list: %error', ['%error' => $list['error']], WATCHDOG_NOTICE);
   }
 
   return $list;
