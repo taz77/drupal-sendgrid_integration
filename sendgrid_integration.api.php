@@ -32,15 +32,18 @@
  *   Result data returned by drupal_http_request.
  */
 function hook_sendgrid_integration_sent($to, $result_code, $unique_args, $result_data) {
-  if($unique_args['module'] == 'my_module' && $result_code = 200) {
+  if ($unique_args['module'] == 'my_module' && $result_code = 200) {
     watchdog('My Module', 'My module has successfully sent email', NULL, WATCHDOG_NOTICE, $link = NULL);
   }
 }
 
 /**
- * This hook is invoked before mail is sent, allowing modification of unique_args.
+ * This hook is invoked before mail is sent, allowing modification of
+ * unique_args.
+ *
  * @param array $unique_args
  *   Unique arguments.
+ *
  * @return array
  *   Returned array will be used as unique arguments.
  */
@@ -51,9 +54,12 @@ function hook_sendgrid_integration_unique_args_alter($unique_args) {
 }
 
 /**
- * This hook is invoked before mail is sent, allowing modification of categories.
+ * This hook is invoked before mail is sent, allowing modification of
+ * categories.
+ *
  * @param array $categories
  *   An array of categories for Sendgrid statistics.
+ *
  * @return array
  *   Returned array will be used as categories.
  */
