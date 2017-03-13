@@ -1,6 +1,113 @@
 <?php
 
 /**
+ * Provides Settings Form.
+ */
+function sendgrid_integration_admin() {
+  $form = [];
+
+  $form['authentication'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Authentication'),
+  ];
+
+  $requirenewkey = TRUE;
+  if (!empty(variable_get('sendgrid_integration_apikey', FALSE))) {
+    $form['authentication']['secretkeynotice'] = [
+      '#markup' => t('You have saved a secret key. You may change the key by inputing a new one in the field directly below.'),
+    ];
+    $requirenewkey = FALSE;
+  }
+
+  $form['authentication']['sendgrid_integration_apikey'] = [
+    '#type' => 'password',
+    '#required' => $requirenewkey,
+    '#title' => t('API Secret Key'),
+    '#description' => t('The secret key of your key pair. These are only generated once by Sendgrid. Your existing key is hidden. If you need to change this, provide a new key here.'),
+  ];
+
+  $form['debugging']['maillog'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Maillog integration'),
+  ];
+  $form['actions'] = ['#type' => 'actions'];
+  $form['actions']['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Save Settings'),
+    '#submit' => ['sendgrid_integration_admin_submit'],
+    '#validate' => [
+      'sendgrid_integration_admin_validate',
+    ],
+  ];
+
+  if (!module_exists('maillog')) {
+    $form['debugging']['maillog']['#description'] = t('Installing the <a href="@url">Maillog module</a> also allows keeping copies of all emails sent through the site.', ['@url' => 'https://www.drupal.org/project/maillog']);
+  }
+  else {
+    $form['debugging']['maillog']['#description'] = t('The <a href="@url">Maillog module</a> is installed, it can also be used to keep copies of all emails sent through the site.', ['@url' => url('admin/config/development/maillog')]);
+
+    $form['debugging']['maillog']['sendgrid_integration_maillog_log'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create table entries in maillog table for each e-mail.'),
+      '#default_value' => variable_get('sendgrid_integration_maillog_log', TRUE),
+    ];
+
+    $form['debugging']['maillog']['sendgrid_integration_maillog_devel'] = [
+      '#type' => 'checkbox',
+      '#title' => t("Display the e-mails on page using devel module (if enabled)."),
+      '#default_value' => variable_get('sendgrid_integration_maillog_devel', TRUE),
+      '#disabled' => !module_exists('devel'),
+    ];
+  }
+
+  return $form;
+}
+
+/**
+ * Validation function for admin settings.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function sendgrid_integration_admin_validate($form, &$form_state) {
+  // Check for API secret key. If missing throw error.
+  if (empty(variable_get('sendgrid_integration_apikey', '')) && empty($form_state['values']['sendgrid_integration_apikey'])) {
+    form_set_error('authentication][sendgrid_integration_apikey', t('You have not stored an API Secret Key.'));
+  }
+}
+
+/**
+ * Submit handler for admin settings.
+ *
+ * We use a custom submit handler to only set variables if values are supplied
+ * in the UI.
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @return bool
+ */
+function sendgrid_integration_admin_submit($form, $form_state) {
+  if (isset($form_state['values']['sendgrid_integration_maillog_log'])) {
+    variable_set('sendgrid_integration_maillog_log', check_plain($form_state['values']['sendgrid_integration_maillog_log']));
+  }
+  if (isset($form_state['values']['sendgrid_integration_maillog_devel'])) {
+    variable_set('sendgrid_integration_maillog_devel', check_plain($form_state['values']['sendgrid_integration_maillog_devel']));
+  }
+  $existingkey = variable_get('sendgrid_integration_apikey', '');
+  if (empty($form_state['values']['sendgrid_integration_apikey']) && !empty($existingkey)) {
+    return TRUE;
+  }
+  if (isset($form_state['values']['sendgrid_integration_apikey']) && !empty($form_state['values']['sendgrid_integration_apikey'])) {
+    variable_set('sendgrid_integration_apikey', check_plain($form_state['values']['sendgrid_integration_apikey']));
+    drupal_set_message(t('SendGrid Settings Saved'), 'status', FALSE);
+    return TRUE;
+  }
+
+}
+
+
+/**
  * Provides a form to send a test email through Sendgrid.
  */
 function sendgrid_integration_test() {
