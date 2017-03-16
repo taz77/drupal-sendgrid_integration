@@ -22,8 +22,19 @@ run on a 60 minute interval.
 REQUIREMENTS
 --------------------------------------------------------------------------------
 Module dependencies:
+
+Mailsystem - A module to create an agnostic management layer for Mail. Very
+useful for controling the mail system on Drupal.
+
+This module no longer requires Composer Manager but it requires that the 
+SendGrid API Wrapper class is available. One way to accomplish this requirement
+is to use Composer Manager (see below).
+
+
+COMPOSER MANAGER
+--------------------------------------------------------------------------------
 Composer Manager (https://www.drupal.org/project/composer_manager) - A Drupal
-module to faciltate the use of Composer (https://getcomposer.org) on a per-module
+module to facilitate the use of Composer (https://getcomposer.org) on a per-module
 basis.
 
 Composer is the definitive source for PHP dependencies, but implementing
@@ -32,14 +43,8 @@ an entire project - in this case it would be your entire Drupal source code.
 Composer manager allows for modules to declare their own composer.json file
 rather than a project global composer.json.
 
-  Composer is being used because of the usefulness it offers:
-  https://www.acquia.com/blog/using-composer-manager-get-island-now
-
 Running Composer and composer manager will require command line access via
 DRUSH. There is no GUI for this tool.
-
-Mailsystem - A module to create an agnostic management layer for Mail. Very
-useful for controling the mail system on Drupal.
 
 INSTALLATION
 --------------------------------------------------------------------------------
