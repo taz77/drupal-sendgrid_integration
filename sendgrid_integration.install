@@ -3,7 +3,7 @@
  * @file
  * Contains install and update functions for SendGrid Integration
  */
-
+use SendGrid\Client;
 /**
  * Implemenets hook_enable().
  */
@@ -37,6 +37,23 @@ function sendgrid_integration_requirements($phase) {
   $requirements = [];
   $apikey = variable_get('sendgrid_integration_apikey', NULL);
   switch ($phase) {
+    case 'install':
+      if(!class_exists(Client::class)){
+        $requirements['sendgrid_integration'] = [
+          'title' => t('SendGrid API Wrapper'),
+          'value' => t('API Wrapper Library Missing'),
+          'severity' => REQUIREMENT_ERROR,
+          'description' => t('You need to install the SendGrid API wrapper via one of the two methods documented in the README.md of the module.'),
+        ];
+      }
+      else {
+        $requirements['sendgrid_integration'] = [
+          'title' => t('SendGrid API Wrapper'),
+          'severity' => REQUIREMENT_OK,
+          'value' => t('API wrapper installed.'),
+        ];
+      }
+      break;
     case 'runtime':
       if (empty($apikey)) {
         $requirements['sendgrid_integration'] = [
