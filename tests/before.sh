@@ -23,6 +23,7 @@ drush dl maillog
 drush en -y maillog
 drush dl composer_manager
 drush en -y composer_manager
+drush composer-manager update --no-dev
 
 
 # Ensure the module is linked into the code base and enabled.
