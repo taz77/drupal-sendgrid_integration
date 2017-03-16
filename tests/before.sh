@@ -21,6 +21,8 @@ echo "DRUPAL TI - Delete cache dir"
 rm -f "$DRUPAL_TI_CACHE_DIR"/HOME/.drush/cache
 drush dl maillog
 drush en -y maillog
+drush dl composer-manager
+drush en -y composer-manager
 
 
 # Ensure the module is linked into the code base and enabled.
