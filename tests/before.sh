@@ -23,7 +23,6 @@ drush dl maillog
 drush en -y maillog
 drush dl composer_manager
 drush en -y composer_manager
-drush composer-manager update --no-dev
 drush dl -y composer-8.x-1.x
 drush composer-manager require fastglass/sendgrid
 
