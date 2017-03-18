@@ -34,8 +34,8 @@ is to use Composer Manager (see below).
 COMPOSER MANAGER
 --------------------------------------------------------------------------------
 Composer Manager (https://www.drupal.org/project/composer_manager) - A Drupal
-module to facilitate the use of Composer (https://getcomposer.org) on a per-module
-basis.
+module to facilitate the use of Composer (https://getcomposer.org) on a 
+per-module basis.
 
 Composer is the definitive source for PHP dependencies, but implementing
 Composer in modules is difficult to say the least. Composer typically acts over
@@ -54,10 +54,12 @@ line and the use of Drush.
 1. Move this folder under modules directory of your installation,
    example sites/all/modules or sites/default/modules
 
-2. Install Dependencies which include Composer Manager. Use Drush to update
-   dependencies via composer `drush composer-manager update --no-dev`.
-   This will download the Sendgrid API. It is important to use the --no-dev option so you
-   do not download libraries that are used for development and testing only.
+2. Install Dependencies. 
+   * If you are using Composer manager: 
+   Use Drush to update dependencies via composer 
+   `drush composer-manager update --no-dev`.    This will download the Sendgrid 
+   API. It is important to use the --no-dev option so you do not download 
+   libraries that are used for development and testing only.
 
 3. Navigate to Modules and enable SendGrid Integration in the Mail category.
 
