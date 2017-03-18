@@ -19,11 +19,13 @@ drush cc drush
 drush cc all
 echo "DRUPAL TI - Delete cache dir"
 rm -f "$DRUPAL_TI_CACHE_DIR"/HOME/.drush/cache
+# Download required modules.
 drush dl maillog
 drush en -y maillog
 drush dl composer_manager
 drush en -y composer_manager
 drush dl -y composer-8.x-1.x
+# We have to pull the API wrapper because we made it a soft requirement in the module.
 drush composer-manager require fastglass/sendgrid
 
 
