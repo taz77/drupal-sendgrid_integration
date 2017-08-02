@@ -177,23 +177,35 @@ function sendgrid_integration_reports_get_stats_global() {
  */
 
 
+/**
+ * Check for an api key
+ */
+function sendgrid_integration_reports_api_key($key) {
+  if (!$key) {
+    // If not set in function call, load key from variables and throw errors if not there.
+    $key = variable_get('sendgrid_integration_apikey', '');
+    if (!$key) {
+      watchdog('sendgrid_integration_reports', t('Sendgrid Module is not setup with API key.'),
+        array(), 'WATCHDOG_NOTICE', NULL);
+      drupal_set_message(t('Sendgrid Module is not setup with an API key.'), 'warning', TRUE);
+    }
+  }
+  return $key;
+}
+
+
 function sendgrid_integration_reports_get_stats($cache_id, $categories = [], $start_date = NULL, $end_date = NULL, $refresh = FALSE, $key_secret = NULL) {
+
+  if (!$key = sendgrid_integration_reports_api_key($key_secret)) {
+    return FALSE;
+  }
+
   if (!$refresh && $cache = cache_get($cache_id, 'cache_sendgrid_integration_reports')) {
     return $cache->data;
   }
 
-  if (!$key_secret) {
-    // If not set in function call, load key from variables and throw errors if not there.
-    $key_secret = variable_get('sendgrid_integration_apikey', '');
-    if (empty($key_secret)) {
-      watchdog('sendgrid_integration_reports', t('Sendgrid Module is not setup with API key.'), [], 'WATCHDOG_NOTICE', NULL);
-      drupal_set_message(t('Sengrid Module is not setup with an API key.'), 'warning', TRUE);
-      return FALSE;
-    }
-  }
-
   // Set headers and create a Guzzle client to communicate with Sendgrid.
-  $headers['Authorization'] = 'Bearer' . ' ' . $key_secret;
+  $headers['Authorization'] = 'Bearer' . ' ' . $key;
   $clienttest = new GuzzleHttp\Client(
     [
       'base_uri' => 'https://api.sendgrid.com/v3/',
@@ -291,22 +303,18 @@ function sendgrid_integration_reports_get_stats($cache_id, $categories = [], $st
  * @return array
  */
 function sendgrid_integration_reports_get_stats_browser($key_secret = NULL) {
-  if ($cache = cache_get('sendgrid_reports_browsers', 'cache_sendgrid_integration_reports')) {
+  if (!$key = sendgrid_integration_reports_api_key($key_secret)) {
+    return FALSE;
+  }
+
+  $cache_key = hash('sha256', 'sr_browser:' . $key);
+  if ($cache = cache_get($cache_key, 'cache_sendgrid_integration_reports')) {
     return $cache->data;
   }
 
-  if (!$key_secret) {
-    // If not set in function call, load key from variables and throw errors if not there.
-    $key_secret = variable_get('sendgrid_integration_apikey', '');
-    if (empty($key_secret)) {
-      watchdog('sendgrid_integration_reports', t('Sendgrid Module is not setup with API key.'), [], 'WATCHDOG_NOTICE', NULL);
-      drupal_set_message(t('Sengrid Module is not setup with an API key.'), 'warning', TRUE);
-      return FALSE;
-    }
-  }
 
   // Set headers and create a Guzzle client to communicate with Sendgrid.
-  $headers['Authorization'] = 'Bearer' . ' ' . $key_secret;
+  $headers['Authorization'] = 'Bearer' . ' ' . $key;
   $clienttest = new GuzzleHttp\Client(
     [
       'base_uri' => 'https://api.sendgrid.com/v3/',
@@ -366,7 +374,7 @@ function sendgrid_integration_reports_get_stats_browser($key_secret = NULL) {
     }
   }
 
-  cache_set('sendgrid_reports_browsers', $data, 'cache_sendgrid_integration_reports', CACHE_TEMPORARY);
+  cache_set($cache_key, $data, 'cache_sendgrid_integration_reports', CACHE_TEMPORARY);
   return $data;
 }
 
@@ -375,22 +383,18 @@ function sendgrid_integration_reports_get_stats_browser($key_secret = NULL) {
  * @return array
  */
 function sendgrid_integration_reports_get_stats_devices($key_secret = NULL) {
-  if ($cache = cache_get('sendgrid_reports_devices', 'cache_sendgrid_integration_reports')) {
+  if (!$key = sendgrid_integration_reports_api_key($key_secret)) {
+    return FALSE;
+  }
+
+  // Hash in the api key for unique cache per key
+  $cache_key = hash('sha256', 'sr_devices:' . $key);
+  if ($cache = cache_get($cache_key, 'cache_sendgrid_integration_reports')) {
     return $cache->data;
   }
 
-  if (!$key_secret) {
-    // If not set in function call, load key from variables and throw errors if not there.
-    $key_secret = variable_get('sendgrid_integration_apikey', '');
-    if (empty($key_secret)) {
-      watchdog('sendgrid_integration_reports', t('Sendgrid Module is not setup with API key.'), [], 'WATCHDOG_NOTICE', NULL);
-      drupal_set_message(t('Sengrid Module is not setup with an API key.'), 'warning', TRUE);
-      return FALSE;
-    }
-  }
-
   // Set headers and create a Guzzle client to communicate with Sendgrid.
-  $headers['Authorization'] = 'Bearer' . ' ' . $key_secret;
+  $headers['Authorization'] = 'Bearer' . ' ' . $key;
   $clienttest = new GuzzleHttp\Client(
     [
       'base_uri' => 'https://api.sendgrid.com/v3/',
@@ -450,6 +454,6 @@ function sendgrid_integration_reports_get_stats_devices($key_secret = NULL) {
     }
   }
 
-  cache_set('sendgrid_reports_devices', $data, 'cache_sendgrid_integration_reports', CACHE_TEMPORARY);
+  cache_set($cache_key, $data, 'cache_sendgrid_integration_reports', CACHE_TEMPORARY);
   return $data;
 }
