@@ -38,6 +38,10 @@ function sendgrid_integration_requirements($phase) {
   $apikey = variable_get('sendgrid_integration_apikey', NULL);
   switch ($phase) {
     case 'install':
+      $dir = drupal_get_path('module', 'sendgrid_integration') . '/vendor/composer';
+      if (module_exists('xautoload') && file_exists($dir)) {
+        xautoload()->adapter->composerDir($dir);
+      }
       if(!class_exists(Client::class)){
         $requirements['sendgrid_integration'] = [
           'title' => t('SendGrid API Wrapper'),

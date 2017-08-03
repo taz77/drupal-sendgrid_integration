@@ -10,6 +10,14 @@
 define('SENDGRID_INTEGRATION_EMAIL_REGEX', '/^\s*(.+?)\s*<\s*([^>]+)\s*>$/');
 
 /**
+ * Implements hook_xautoload().
+ */
+function sendgrid_integration_xautoload($adapter) {
+  $dir = drupal_get_path('module', 'sendgrid_integration') . '/vendor/composer';
+  $adapter->absolute()->composerDir($dir);
+}
+
+/**
  * Implements hook_menu().
  */
 function sendgrid_integration_menu() {

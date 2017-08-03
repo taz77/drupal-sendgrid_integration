@@ -26,9 +26,12 @@ Module dependencies:
 Mailsystem - A module to create an agnostic management layer for Mail. Very
 useful for controling the mail system on Drupal.
 
-This module no longer requires Composer Manager but it requires that the 
-SendGrid API Wrapper class is available. One way to accomplish this requirement
-is to use Composer Manager (see below).
+This module requires that the SendGrid API Wrapper class is available. You may
+accomplish this with:
+
+* Composer Manager module (see below).
+* X Autoload module (see below).
+* Roll your own.
 
 
 COMPOSER MANAGER
@@ -45,6 +48,19 @@ rather than a project global composer.json.
 
 Running Composer and composer manager will require command line access via
 DRUSH. There is no GUI for this tool.
+
+X Autoload
+--------------------------------------------------------------------------------
+This method may not work if have another install of Guzzle in your
+codebase.
+
+1. Download and install [X Autoload module](https://www.drupal.org/project/xautoload).
+2. Install the libraries:
+
+```
+cd path/to/sendgrid_integration
+composer install
+```
 
 INSTALLATION
 --------------------------------------------------------------------------------
