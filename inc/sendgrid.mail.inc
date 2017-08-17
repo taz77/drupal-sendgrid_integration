@@ -333,7 +333,8 @@ class SendGridMailSystem implements MailSystemInterface {
         $record->subject = $sendgrid_message->getSubject();
         $record->header_from = $sendgrid_message->getFrom();
         // This returns an array of emails so we have to make a string.
-        $record->header_to = implode(',', $sendgrid_message->getTos());
+        // @TODO Restore this once the V3 wrapper is availble.
+        // $record->header_to = implode(',', $sendgrid_message->getTos());
         $record->header_reply_to = $sendgrid_message->getReplyTo();
         $record->header_all = serialize($message['headers']);
         $record->sent_date = REQUEST_TIME;
