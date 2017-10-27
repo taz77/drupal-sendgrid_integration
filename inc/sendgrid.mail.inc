@@ -281,7 +281,10 @@ class SendGridMailSystem implements MailSystemInterface {
           break;
 
         case 'reply-to':
-          $sendgrid_message->setReplyTo($message['headers']['Reply-To']);
+          if (isset($message['headers']['Reply-To']) || isset($message['headers']['reply-to']) && $message['headers']['reply-to'] = $message['headers']['Reply-To']) {
+            $sendgrid_message->setReplyTo($message['headers']['reply-to']);
+          }
+
           break;
       }
 
