@@ -97,11 +97,6 @@ function sendgrid_integration_uninstall() {
  * Remove variables no longer used.
  */
 function sendgrid_integration_update_7001() {
-  $t = get_t();
-  if (!module_exists('composer_manager')) {
-    drupal_set_message($t('Install Composer Manager before upgrading (https://www.drupal.org/project/composer_manager)'), 'error');
-    exit;
-  }
   // Deleting unused variables.
   variable_del('sendgrid_integration_ssl');
   variable_del('sendgrid_integration_username');
