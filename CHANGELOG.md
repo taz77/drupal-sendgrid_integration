@@ -1,3 +1,17 @@
+7.x-1.2
+================================================================================
+
+Issues resolved in this release
+* 2848810: Notice: Undefined index: Reply-To in SendGridMailSystem->mail()
+* 2917080: Remove the gitignore file
+* 2899473: Add support for X Autoload module
+* 2899019: Allow report function to be called with different API keys
+* 2859348: Make Composer Manager a Soft-Dependency
+* 2696753: Support SendGrid's hosted templates
+* 2786379: SendGrid shouldn't check "send" flag
+* 2859670: Incorrect usage of watchdog() in multiple places
+* 2859348: Make Composer Manager a Soft-Dependency
+
 7.x-1.0-beta3
 ================================================================================
 Upgrade to Beta3 prior to 4 May 2016 incorrectly deleted the API Key. The API
