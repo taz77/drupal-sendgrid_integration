@@ -33,7 +33,7 @@ class SendGridMailSystem implements MailSystemInterface {
     $key_secret = variable_get('sendgrid_integration_apikey', '');
     if (empty($key_secret)) {
       // Set a warning int he logs of there is no key.
-      watchdog('SendGrid Integration', t('No API Secret key has been set'), [], WATCHDOG_ERRROR);
+      watchdog('SendGrid Integration', t('No API Secret key has been set'), [], WATCHDOG_ERROR);
       // Return false to indicate message was not able to send.
       return FALSE;
     }
