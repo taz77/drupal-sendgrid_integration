@@ -23,8 +23,16 @@ REQUIREMENTS
 --------------------------------------------------------------------------------
 Module dependencies:
 
-Mailsystem - A module to create an agnostic management layer for Mail. Very
-useful for controling the mail system on Drupal.
+Drupal's Mailsystem needs to be changed to use SendGrid.  This can be done with
+one of:
+
+* Mailsystem module.  A GUI for controlling which Mailsystem is used for which
+emails.
+* Hardcode in settings.php:
+
+```
+$conf['mail_system'] = array('default-system' => 'SendGridMailSystem');
+```
 
 This module requires that the SendGrid API Wrapper class is available. You may
 accomplish this with:

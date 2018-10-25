@@ -215,7 +215,13 @@ function sendgrid_integration_test_submit($form, &$form_state) {
   }
   $params['include_test_attachment'] = $form_state['values']['include_attachment'];
   // Setting a specific mail system for the SendGrid Integration Module.
-  mailsystem_set(['sendgrid_integration' => 'SendGridMailSystem']);
+  if (module_exists('mailsystem')) {
+    mailsystem_set(['sendgrid_integration' => 'SendGridMailSystem']);
+  }
+  else {
+    global $conf;
+    $conf['mail_system'] = array('default-system' => 'SendGridMailSystem');
+  }
   // Attempt to send the email and post a message if it was successful.
   if (!empty($form_state['values']['fromname'])) {
     $senderfrom = $form_state['values']['fromname'] . ' <' . variable_get('site_mail') . '>';
