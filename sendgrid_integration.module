@@ -7,7 +7,7 @@
  * Provides module configuration and help functionality.
  */
 
-define('SENDGRID_INTEGRATION_EMAIL_REGEX', '/^\s*(.+?)\s*<\s*([^>]+)\s*>$/');
+define('SENDGRID_INTEGRATION_EMAIL_REGEX', '/^\s*"?(.+?)"?\s*<\s*([^>]+)\s*>$/');
 
 /**
  * Implements hook_xautoload().
