@@ -1,10 +1,11 @@
 language: php
 sudo: false
 php:
-- 5.5
 - 5.6
 - 7.0
 - 7.1
+- 7.2
+- 7.3
 matrix:
   fast_finish: true
   exclude:
@@ -12,6 +13,7 @@ matrix:
     env: DRUPAL_TI_RUNNERS="test phpunit phpunit-core simpletest behat" DRUPAL_TI_SAVE_CACHE="0"
   - php: 5.4
     env: DRUPAL_TI_RUNNERS="test phpunit phpunit-core simpletest behat" DRUPAL_TI_SAVE_CACHE="0"
+  - php: 5.5
 env:
   global:
   - PATH="$HOME/.composer/vendor/bin:$PATH"
