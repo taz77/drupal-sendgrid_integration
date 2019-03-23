@@ -36,7 +36,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  const SENDGRID_INTEGRATION_EMAIL_REGEX = '/^\s*(.+?)\s*<\s*([^>]+)\s*>$/';
+  const SENDGRID_INTEGRATION_EMAIL_REGEX = '/^\s*"?(.+?)"?\s*<\s*([^>]+)\s*>$/';
 
   /**
    * The config factory service.
