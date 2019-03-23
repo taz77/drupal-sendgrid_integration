@@ -28,8 +28,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Sends the message using Sendgrid API.")
  * )
  */
+/**
+ * {@inheritdoc}
+ */
 class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
+  /**
+   * {@inheritdoc}
+   */
   const SENDGRID_INTEGRATION_EMAIL_REGEX = '/^\s*(.+?)\s*<\s*([^>]+)\s*>$/';
 
   /**
@@ -379,7 +385,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
             default:
               // Everything else is unknown so we log and send the message as text.
-              drupal_set_message(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]), 'error');
+              \Drupal::messenger()->addError(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
               $this->logger->error("The Content-Type: $value of your message is not supported by PHPMailer and will be sent as text/plain instead.");
               // Force the email to be text.
               $sendgrid_message->setText(MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
@@ -452,7 +458,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
         $attachments[$filename] = $filepath;
       }
     }
-
 
     // If we have attachments, add them.
     if (!empty($attachments)) {

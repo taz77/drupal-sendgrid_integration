@@ -4,6 +4,14 @@
  * @file
  * Implements Drupal MailSystemInterface.
  */
+
+use SendGrid\Exception;
+use SendGrid\Email;
+use SendGrid\Client;
+
+/**
+ * {@inheritdoc}
+ */
 class SendGridMailSystem implements MailSystemInterface {
 
   /**
@@ -20,7 +28,6 @@ class SendGridMailSystem implements MailSystemInterface {
     return $message;
   }
 
-
   /**
    * Implement mail method to send mail via Sendgrid.
    *
@@ -33,7 +40,7 @@ class SendGridMailSystem implements MailSystemInterface {
     $key_secret = variable_get('sendgrid_integration_apikey', '');
     if (empty($key_secret)) {
       // Set a warning in the logs of there is no key.
-      watchdog('sendgrid_integration', t('No API Secret key has been set'), 'warning');
+      \Drupal::logger('sendgrid_integration')->warning(t('No API Secret key has been set'));
       // Return false to indicate message was not able to send.
       return FALSE;
     }
@@ -45,8 +52,8 @@ class SendGridMailSystem implements MailSystemInterface {
       'raise_exceptions' => FALSE,
     ];
     // Create a new SendGrid object.
-    $sendgrid = new SendGrid\Client($key_secret, $options);
-    $sendgrid_message = new SendGrid\Email();
+    $sendgrid = new Client($key_secret, $options);
+    $sendgrid_message = new Email();
     $sitename = variable_get('site_name');
     // Defining default unique args.
     $unique_args = [
@@ -93,7 +100,6 @@ class SendGridMailSystem implements MailSystemInterface {
     // Build the Sendgrid mail object.
     // The message MODULE and ID is used for the Category. Category is the only
     // thing in the Sendgrid UI you can use to sort mail.
-
     // This is an array of categories for Sendgrid statistics.
     $categories = [
       $sitename,
@@ -133,16 +139,16 @@ class SendGridMailSystem implements MailSystemInterface {
       }
     }
 
-    //Add cc and bcc in mail if they exist.
+    // Add cc and bcc in mail if they exist.
     $cc_bcc_keys = ['cc', 'bcc'];
     $address_cc_bcc = [];
 
-    // use Sendgrid Templates if they have been set
+    // Use Sendgrid Templates if they have been set.
     if (!empty($message['sendgrid']['template_id'])) {
       $sendgrid_message->setTemplateId($message['sendgrid']['template_id']);
     }
 
-    // use Sendgrid Substitutions if they have been set
+    // Use Sendgrid Substitutions if they have been set.
     if (!empty($message['sendgrid']['substitutions'])) {
       $sendgrid_message->setSubstitutions($message['sendgrid']['substitutions']);
     }
@@ -152,7 +158,7 @@ class SendGridMailSystem implements MailSystemInterface {
       switch (drupal_strtolower($key)) {
         case 'content-type':
           // Parse several values on the Content-type header, storing them in an array like
-          // key=value -> $vars['key']='value'
+          // key=value -> $vars['key']='value'.
           $vars = explode(';', $value);
           foreach ($vars as $i => $var) {
             if ($cut = strpos($var, '=')) {
@@ -162,7 +168,7 @@ class SendGridMailSystem implements MailSystemInterface {
               $vars[$new_key] = $new_var;
             }
           }
-          // If $vars is empty then set an empty value at index 0 to avoid a PHP warning in the next statement
+          // If $vars is empty then set an empty value at index 0 to avoid a PHP warning in the next statement.
           $vars[0] = isset($vars[0]) ? $vars[0] : '';
           // Nested switch to process the various content types. We only care
           // about the first entry in the array.
@@ -190,8 +196,7 @@ class SendGridMailSystem implements MailSystemInterface {
               // Get the boundary ID from the Content-Type header.
               $boundary = $this->_get_substring($message['body'], 'boundary', '"', '"');
 
-              // Parse text and HTML portions
-
+              // Parse text and HTML portions.
               // Split the body based on the boundary ID.
               $body_parts = $this->_boundary_split($message['body'], $boundary);
               foreach ($body_parts as $body_part) {
@@ -218,7 +223,7 @@ class SendGridMailSystem implements MailSystemInterface {
               // Split the body based on the boundary ID.
               $body_parts = $this->_boundary_split($message['body'], $boundary);
 
-              // Parse text and HTML portions
+              // Parse text and HTML portions.
               foreach ($body_parts as $body_part) {
                 if (strpos($body_part, 'multipart/alternative')) {
                   // Get the second boundary ID from the Content-Type header.
@@ -257,7 +262,6 @@ class SendGridMailSystem implements MailSystemInterface {
                 else {
                   // This parses the message if there is no internal content
                   // type set after the multipart/mixed.
-
                   // If text/plain within the body part, add it to $mailer->Body.
                   if (strpos($body_part, 'text/plain')) {
                     // Clean up the text.
@@ -278,8 +282,8 @@ class SendGridMailSystem implements MailSystemInterface {
 
             default:
               // Everything else is unknown so we log and send the message as text.
-              drupal_set_message(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]), 'error');
-              watchdog('sendgrid_integration', 'The %header of your message is not supported by PHPMailer and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"], WATCHDOG_ERROR);
+              \Drupal::messenger()->addError(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
+              \Drupal::logger('sendgrid_integration')->error(t('The %header of your message is not supported by PHPMailer and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
               // Force the email to be text.
               $sendgrid_message->setText(drupal_wrap_mail(drupal_html_to_text($message['body'])));
           }
@@ -290,7 +294,7 @@ class SendGridMailSystem implements MailSystemInterface {
           break;
       }
 
-      // Handle latter case issue for cc and bcc key
+      // Handle latter case issue for cc and bcc key.
       if (in_array(drupal_strtolower($key), $cc_bcc_keys)) {
         $mail_ids = explode(',', $value);
         foreach ($mail_ids as $mail_id) {
@@ -332,7 +336,7 @@ class SendGridMailSystem implements MailSystemInterface {
     // Integration with the Maillog module to use for debugging.
     if (module_exists('maillog')) {
       if (variable_get('sendgrid_integration_maillog_log', TRUE)) {
-        $record = new stdClass;
+        $record = new stdClass();
 
         $record->header_message_id = isset($message->MessageID) ? $message->MessageID : NULL;
         $record->subject = $sendgrid_message->getSubject();
@@ -345,7 +349,7 @@ class SendGridMailSystem implements MailSystemInterface {
 
         // Used to separate different portions of the body string.
         $divider = str_repeat('-', 120) . "\n";
-        // Initialize object
+        // Initialize object.
         $record->body = '';
         // Load the attachments.
         $attachments = $sendgrid_message->getAttachments();
@@ -393,7 +397,6 @@ class SendGridMailSystem implements MailSystemInterface {
           $record->body .= $divider;
           $record->body .= $divider;
         }
-
 
         $record->body .= 'Raw Message' . "\n";
         $record->body .= $divider;
@@ -460,17 +463,16 @@ class SendGridMailSystem implements MailSystemInterface {
       }
     }
 
-
     // Lets try and send the message and catch the error.
     try {
       $response = $sendgrid->send($sendgrid_message);
     }
-    catch (\SendGrid\Exception $e) {
+    catch (Exception $e) {
       $error_code = filter_xss($e->getCode());
-      watchdog('SendGrid Integration', 'Sending emails to Sengrind service failed with error code @error_code', ['@error_code' => $error_code], WATCHDOG_ERROR, $link = NULL);
+      \Drupal::logger('sendgrid_integration')->error(t('Sending emails to Sengrind service failed with error code @error_code', ['@error_code' => $error_code]));
       foreach ($e->getErrors() as $er) {
         $error_info = filter_xss($er);
-        watchdog('SendGrid Integration', 'Sendgrid generated error @error_info', ['@error_info' => $error_info], NULL, WATCHDOG_ERROR, $link = NULL);
+        \Drupal::logger('sendgrid_integration')->error(t('Sendgrid generated error @error_info', ['@error_info' => $error_info]));
       }
       // Add message to queue if reason for failing was timeout or
       // another valid reason. This adds more error tolerance.
@@ -583,7 +585,7 @@ class SendGridMailSystem implements MailSystemInterface {
   protected function _remove_headers($input) {
     $part_array = explode("\n", $input);
 
-    // will strip these headers according to RFC2045
+    // Will strip these headers according to RFC2045.
     $headers_to_strip = [
       'Content-Type',
       'Content-Transfer-Encoding',
@@ -594,22 +596,21 @@ class SendGridMailSystem implements MailSystemInterface {
 
     while (count($part_array) > 0) {
 
-      // ignore trailing spaces/newlines
+      // Ignore trailing spaces/newlines.
       $line = rtrim($part_array[0]);
 
-      // if the line starts with a known header string
+      // If the line starts with a known header string.
       if (preg_match($pattern, $line)) {
         $line = rtrim(array_shift($part_array));
-        // remove line containing matched header.
-
-        // if line ends in a ';' and the next line starts with four spaces, it's a continuation
+        // Remove line containing matched header.
+        // If line ends in a ';' and the next line starts with four spaces, it's a continuation
         // of the header split onto the next line. Continue removing lines while we have this condition.
         while (substr($line, -1) == ';' && count($part_array) > 0 && substr($part_array[0], 0, 4) == '    ') {
           $line = rtrim(array_shift($part_array));
         }
       }
       else {
-        // no match header, must be past headers; stop searching.
+        // No match header, must be past headers; stop searching.
         break;
       }
     }
@@ -617,6 +618,5 @@ class SendGridMailSystem implements MailSystemInterface {
     $output = implode("\n", $part_array);
     return $output;
   }
-
 
 }
