@@ -173,7 +173,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
 
     // Allow other modules to modify unique arguments.
-    $args = $this->moduleHandler->invokeAll('sendgrid_integration_unique_args_alter', [$unique_args]);
+    $args = $this->moduleHandler->invokeAll('sendgrid_integration_unique_args_alter', [$unique_args, $message]);
 
     // Check if we got any variable back.
     if (!empty($args)) {
