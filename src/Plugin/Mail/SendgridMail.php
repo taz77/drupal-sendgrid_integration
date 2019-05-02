@@ -28,9 +28,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Sends the message using Sendgrid API.")
  * )
  */
-/**
- * {@inheritdoc}
- */
 class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
   /**
