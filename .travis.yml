@@ -36,6 +36,8 @@ env:
 
     # The environment to use, supported are: drupal-7, drupal-8
     - DRUPAL_TI_ENVIRONMENT="drupal-8"
+    # Drupal TI is defaulting to 8.1.x until PR is merged
+    - DRUPAL_TI_CORE_BRANCH="8.7.x"
 
     # The installation profile to use:
     #- DRUPAL_TI_INSTALL_PROFILE="testing"
