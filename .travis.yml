@@ -12,12 +12,10 @@ sudo: false
 
 php:
   - 7.2
-  - hhvm
+  - 7.3
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - php: hhvm
 
 env:
   global:
