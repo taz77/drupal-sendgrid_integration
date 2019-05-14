@@ -107,10 +107,10 @@ before_install:
   - cd ./tests
   - composer global require "lionsad/drupal_ti:1.*"
   - drupal-ti before_install
-  - composer run-script drupal-phpunit-upgrade
 
 install:
   - drupal-ti install
+  - composer run-script drupal-phpunit-upgrade
 
 before_script:
   - drupal-ti before_script
