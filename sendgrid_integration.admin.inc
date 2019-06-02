@@ -123,9 +123,10 @@ function sendgrid_integration_test_submit($form, &$form_state) {
   }
   $result = drupal_mail('sendgrid_integration', 'test', $sendto, language_default(), $params, $senderfrom);
   if (isset($result['result']) && $result['result'] == 'true') {
-    \Drupal::messenger()->addStatus(t('SendGrid test email sent from %from to %to.', [
-      '%from' => $senderfrom,
-      '%to' => $sendto,
-    ]));
+    \Drupal::messenger()
+      ->addStatus(t('SendGrid test email sent from %from to %to.', [
+        '%from' => $senderfrom,
+        '%to' => $sendto,
+      ]));
   }
 }

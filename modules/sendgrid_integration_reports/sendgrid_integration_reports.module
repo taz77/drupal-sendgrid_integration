@@ -43,6 +43,7 @@ function sendgrid_integration_reports_permission() {
 
 /**
  * Access callback for module.
+ *
  * @return BOOL
  */
 function sendgrid_integration_reports_gatekeeper() {
@@ -184,8 +185,10 @@ function sendgrid_integration_reports_get_stats($cache_id, $categories = [], $st
   // Load key from variables and throw errors if not there.
   $key_secret = variable_get('sendgrid_integration_apikey', '');
   if (empty($key_secret)) {
-    \Drupal::logger('sendgrid_integration_reports')->notice(t('Sendgrid Module is not setup with API key.'));
-    \Drupal::messenger()->addWarning(t('Sengrid Module is not setup with an API key.'));
+    \Drupal::logger('sendgrid_integration_reports')
+      ->notice(t('Sendgrid Module is not setup with API key.'));
+    \Drupal::messenger()
+      ->addWarning(t('Sengrid Module is not setup with an API key.'));
     return FALSE;
   }
 
@@ -248,8 +251,10 @@ function sendgrid_integration_reports_get_stats($cache_id, $categories = [], $st
   }
   catch (GuzzleHttp\Exception\ClientException $e) {
     $code = filter_xss($e->getCode());
-    \Drupal::logger('sendgrid_integration_reports')->error(t('Sendgrid Reports module faield to recieve data. HTTP Error Code @errno', ['@errno' => $code]));
-    \Drupal::messenger()->addError(t('Sendgrid Reports module faield to recieve data. See logs.'));
+    \Drupal::logger('sendgrid_integration_reports')
+      ->error(t('Sendgrid Reports module faield to recieve data. HTTP Error Code @errno', ['@errno' => $code]));
+    \Drupal::messenger()
+      ->addError(t('Sendgrid Reports module faield to recieve data. See logs.'));
     return FALSE;
   }
   // Sanitize return before using in Drupal.
@@ -285,6 +290,7 @@ function sendgrid_integration_reports_get_stats($cache_id, $categories = [], $st
 
 /**
  * Function to retrieve browser stats.
+ *
  * @return array
  */
 function sendgrid_integration_reports_get_stats_browser() {
@@ -366,6 +372,7 @@ function sendgrid_integration_reports_get_stats_browser() {
 
 /**
  * Function to retrieve device stats.
+ *
  * @return array
  */
 function sendgrid_integration_reports_get_stats_devices() {
@@ -421,8 +428,10 @@ function sendgrid_integration_reports_get_stats_devices() {
   }
   catch (GuzzleHttp\Exception\ClientException $e) {
     $code = filter_xss($e->getCode());
-    \Drupal::logger('sendgrid_integration_reports')->error(t('Sendgrid Reports module faield to recieve data. HTTP Error Code @errno', ['@errno' => $code]));
-    \Drupal::messenger()->addError(t('Sendgrid Reports module faield to recieve data. See logs.'));
+    \Drupal::logger('sendgrid_integration_reports')
+      ->error(t('Sendgrid Reports module faield to recieve data. HTTP Error Code @errno', ['@errno' => $code]));
+    \Drupal::messenger()
+      ->addError(t('Sendgrid Reports module faield to recieve data. See logs.'));
     return FALSE;
   }
   // Sanitize return before using in Drupal.

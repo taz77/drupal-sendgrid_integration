@@ -7,6 +7,7 @@
 
 /**
  * Global stats page.
+ *
  * @return array
  */
 function sendgrid_integration_reports_global() {

@@ -17,11 +17,12 @@ function sendgrid_integration_reports_disable() {
  */
 function sendgrid_integration_reports_install() {
   $t = get_t();
-  \Drupal::messenger()->addMessage($t('You can configure SendGrid settings under Administer > Configuration > !link',
-    [
-      '!link' => l($t('SendGrid settings'), 'admin/config/system/sendgrid'),
-    ]
-  ));
+  \Drupal::messenger()
+    ->addMessage($t('You can configure SendGrid settings under Administer > Configuration > !link',
+      [
+        '!link' => l($t('SendGrid settings'), 'admin/config/system/sendgrid'),
+      ]
+    ));
 }
 
 /**
