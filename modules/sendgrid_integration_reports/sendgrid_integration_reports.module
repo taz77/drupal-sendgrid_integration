@@ -111,16 +111,19 @@ function sendgrid_integration_reports_settings_form_validate($form, &$form_state
     variable_del('sendgrid_integration_reports_start_date');
     variable_del('sendgrid_integration_reports_end_date');
     \Drupal::messenger()->addStatus(t('Using default settings for dates.'));
-    \Drupal::messenger()->addMessage(t('!cache for changes to take affect.', ['!cache' => l(t('Clear your cache'), 'admin/config/development/performance'),]));
+    \Drupal::messenger()
+      ->addMessage(t('!cache for changes to take affect.', ['!cache' => l(t('Clear your cache'), 'admin/config/development/performance'),]));
     return TRUE;
   }
   if (empty($sdate)) {
     variable_del('sendgrid_integration_reports_start_date');
-    \Drupal::messenger()->addStatus(t('Using default settings for start date. 30 Days back.'));
+    \Drupal::messenger()
+      ->addStatus(t('Using default settings for start date. 30 Days back.'));
   }
   if (empty($edate)) {
     variable_del('sendgrid_integration_reports_end_date');
-    \Drupal::messenger()->addStatus(t('Using default settings for end date. Today.'));
+    \Drupal::messenger()
+      ->addStatus(t('Using default settings for end date. Today.'));
   }
   $date_regex = '/^(19|20)\d\d[\-\/.](0[1-9]|1[012])[\-\/.](0[1-9]|[12][0-9]|3[01])$/';
   if (!empty($sdate) && !preg_match($date_regex, $sdate)) {
@@ -131,7 +134,8 @@ function sendgrid_integration_reports_settings_form_validate($form, &$form_state
     form_set_error('sendgrid_integration_reports_end_date', t('This is not a valid start date. Date must be in the format YYYY-mm-dd.'));
     return FALSE;
   }
-  \Drupal::messenger()->addMessage(t('!cache for changes to take affect.', ['!cache' => l(t('Clear your cache'), 'admin/config/development/performance'),]));
+  \Drupal::messenger()
+    ->addMessage(t('!cache for changes to take affect.', ['!cache' => l(t('Clear your cache'), 'admin/config/development/performance'),]));
 
 }
 
@@ -300,8 +304,10 @@ function sendgrid_integration_reports_get_stats_browser() {
   // Load key from variables and throw errors if not there.
   $key_secret = variable_get('sendgrid_integration_apikey', '');
   if (empty($key_secret)) {
-    \Drupal::logger('sendgrid_integration_reports')->notice(t('Sendgrid Module is not setup with API key.'));
-    \Drupal::messenger()->addWarning(t('Sengrid Module is not setup with an API key.'));
+    \Drupal::logger('sendgrid_integration_reports')
+      ->notice(t('Sendgrid Module is not setup with API key.'));
+    \Drupal::messenger()
+      ->addWarning(t('Sengrid Module is not setup with an API key.'));
     return FALSE;
   }
 
@@ -346,8 +352,10 @@ function sendgrid_integration_reports_get_stats_browser() {
   }
   catch (GuzzleHttp\Exception\ClientException $e) {
     $code = filter_xss($e->getCode());
-    \Drupal::logger('sendgrid_integration_reports')->error(t('Sendgrid Reports module faield to recieve data. HTTP Error Code @errno', ['@errno' => $code]));
-    \Drupal::messenger()->addError(t('Sendgrid Reports module faield to recieve data. See logs.'));
+    \Drupal::logger('sendgrid_integration_reports')
+      ->error(t('Sendgrid Reports module faield to recieve data. HTTP Error Code @errno', ['@errno' => $code]));
+    \Drupal::messenger()
+      ->addError(t('Sendgrid Reports module faield to recieve data. See logs.'));
     return FALSE;
   }
   // Sanitize return before using in Drupal.
@@ -382,8 +390,10 @@ function sendgrid_integration_reports_get_stats_devices() {
   // Load key from variables and throw errors if not there.
   $key_secret = variable_get('sendgrid_integration_apikey', '');
   if (empty($key_secret)) {
-    \Drupal::logger('sendgrid_integration_reports')->notice(t('Sendgrid Module is not setup with API key.'));
-    \Drupal::messenger()->addWarning(t('Sengrid Module is not setup with an API key.'));
+    \Drupal::logger('sendgrid_integration_reports')
+      ->notice(t('Sendgrid Module is not setup with API key.'));
+    \Drupal::messenger()
+      ->addWarning(t('Sengrid Module is not setup with an API key.'));
     return FALSE;
   }
 

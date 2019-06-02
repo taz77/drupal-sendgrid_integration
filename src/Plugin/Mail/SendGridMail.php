@@ -169,7 +169,10 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
 
     // Allow other modules to modify unique arguments.
-    $args = $this->moduleHandler->invokeAll('sendgrid_integration_unique_args_alter', [$unique_args, $message]);
+    $args = $this->moduleHandler->invokeAll('sendgrid_integration_unique_args_alter', [
+      $unique_args,
+      $message,
+    ]);
 
     // Check if we got any variable back.
     if (!empty($args)) {
@@ -381,7 +384,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
             default:
               // Everything else is unknown so we log and send the message as text.
-              \Drupal::messenger()->addError(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
+              \Drupal::messenger()
+                ->addError(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
               $this->logger->error("The Content-Type: $value of your message is not supported by PHPMailer and will be sent as text/plain instead.");
               // Force the email to be text.
               $sendgrid_message->setText(MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
@@ -436,7 +440,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
           $filepath = $attachment['filepath'];
         }
         elseif (isset($attachment['file']) && $attachment['file'] instanceof FileInterface) {
-          $filepath = \Drupal::service('file_system')->realpath($attachment['file']->getFileUri());
+          $filepath = \Drupal::service('file_system')
+            ->realpath($attachment['file']->getFileUri());
         }
         else {
           continue;

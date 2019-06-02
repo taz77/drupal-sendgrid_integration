@@ -5,9 +5,9 @@
  * Implements Drupal MailSystemInterface.
  */
 
-use SendGrid\Exception;
-use SendGrid\Email;
 use SendGrid\Client;
+use SendGrid\Email;
+use SendGrid\Exception;
 
 /**
  * {@inheritdoc}
@@ -40,7 +40,8 @@ class SendGridMailSystem implements MailSystemInterface {
     $key_secret = variable_get('sendgrid_integration_apikey', '');
     if (empty($key_secret)) {
       // Set a warning in the logs of there is no key.
-      \Drupal::logger('sendgrid_integration')->warning(t('No API Secret key has been set'));
+      \Drupal::logger('sendgrid_integration')
+        ->warning(t('No API Secret key has been set'));
       // Return false to indicate message was not able to send.
       return FALSE;
     }
@@ -282,8 +283,10 @@ class SendGridMailSystem implements MailSystemInterface {
 
             default:
               // Everything else is unknown so we log and send the message as text.
-              \Drupal::messenger()->addError(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
-              \Drupal::logger('sendgrid_integration')->error(t('The %header of your message is not supported by PHPMailer and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
+              \Drupal::messenger()
+                ->addError(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
+              \Drupal::logger('sendgrid_integration')
+                ->error(t('The %header of your message is not supported by PHPMailer and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
               // Force the email to be text.
               $sendgrid_message->setText(drupal_wrap_mail(drupal_html_to_text($message['body'])));
           }
@@ -469,10 +472,12 @@ class SendGridMailSystem implements MailSystemInterface {
     }
     catch (Exception $e) {
       $error_code = filter_xss($e->getCode());
-      \Drupal::logger('sendgrid_integration')->error(t('Sending emails to Sengrind service failed with error code @error_code', ['@error_code' => $error_code]));
+      \Drupal::logger('sendgrid_integration')
+        ->error(t('Sending emails to Sengrind service failed with error code @error_code', ['@error_code' => $error_code]));
       foreach ($e->getErrors() as $er) {
         $error_info = filter_xss($er);
-        \Drupal::logger('sendgrid_integration')->error(t('Sendgrid generated error @error_info', ['@error_info' => $error_info]));
+        \Drupal::logger('sendgrid_integration')
+          ->error(t('Sendgrid generated error @error_info', ['@error_info' => $error_info]));
       }
       // Add message to queue if reason for failing was timeout or
       // another valid reason. This adds more error tolerance.
