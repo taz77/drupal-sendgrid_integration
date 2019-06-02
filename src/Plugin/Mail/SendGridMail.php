@@ -3,7 +3,6 @@
 namespace Drupal\sendgrid_integration\Plugin\Mail;
 
 use Drupal\Component\Render\MarkupInterface;
-use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -246,15 +245,15 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
     // Beginning of consolidated header parsing.
     foreach ($message['headers'] as $key => $value) {
-      switch (Unicode::strtolower($key)) {
+      switch (mb_strtolower($key)) {
         case 'content-type':
           // Parse several values on the Content-type header, storing them in an array like
           // key=value -> $vars['key']='value'.
           $vars = explode(';', $value);
           foreach ($vars as $i => $var) {
             if ($cut = strpos($var, '=')) {
-              $new_var = trim(Unicode::strtolower(Unicode::substr($var, $cut + 1)));
-              $new_key = trim(Unicode::substr($var, 0, $cut));
+              $new_var = trim(mb_strtolower(mb_substr($var, $cut + 1)));
+              $new_key = trim(mb_substr($var, 0, $cut));
               unset($vars[$i]);
               $vars[$new_key] = $new_var;
             }
@@ -348,7 +347,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
                       // Clean up the text.
                       $body_part2 = trim($this->removeHeaders(trim($body_part2)));
                       // Check whether the encoding is base64, and if so, decode it.
-                      if (Unicode::strtolower($body_part2_encoding) == 'base64') {
+                      if (mb_strtolower($body_part2_encoding) == 'base64') {
                         // Save the decoded HTML content.
                         $sendgrid_message->setHtml(base64_decode($body_part2));
                       }
@@ -397,11 +396,11 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       }
 
       // Handle latter case issue for cc and bcc key.
-      if (in_array(Unicode::strtolower($key), $cc_bcc_keys)) {
+      if (in_array(mb_strtolower($key), $cc_bcc_keys)) {
         $mail_ids = explode(',', $value);
         foreach ($mail_ids as $mail_id) {
           list($mail_cc_address, $cc_name) = $this->parseAddress($mail_id);
-          $address_cc_bcc[Unicode::strtolower($key)][] = [
+          $address_cc_bcc[mb_strtolower($key)][] = [
             'mail' => $mail_cc_address,
             'name' => $cc_name,
           ];
@@ -538,11 +537,11 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     $search_start = strpos($source, $target) + 1;
     $first_character = strpos($source, $beginning_character, $search_start) + 1;
     $second_character = strpos($source, $ending_character, $first_character) + 1;
-    $substring = Unicode::substr($source, $first_character, $second_character - $first_character);
-    $string_length = Unicode::strlen($substring) - 1;
+    $substring = mb_substr($source, $first_character, $second_character - $first_character);
+    $string_length = mb_strlen($substring) - 1;
 
     if ($substring[$string_length] == $ending_character) {
-      $substring = Unicode::substr($substring, 0, $string_length);
+      $substring = mb_substr($substring, 0, $string_length);
     }
 
     return $substring;
@@ -564,7 +563,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    */
   protected function boundrySplit($input, $boundary) {
     $parts = [];
-    $bs_possible = Unicode::substr($boundary, 2, -2);
+    $bs_possible = mb_substr($boundary, 2, -2);
     $bs_check = '\"' . $bs_possible . '\"';
 
     if ($boundary == $bs_check) {
