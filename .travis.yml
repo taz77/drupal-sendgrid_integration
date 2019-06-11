@@ -104,6 +104,7 @@ mysql:
 
 before_install:
   - composer self-update
+  - composer clearcache
   - cd ./tests
   - composer global require "lionsad/drupal_ti:dev-master"
   - drupal-ti before_install
