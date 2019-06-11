@@ -111,7 +111,7 @@ before_install:
 
 install:
   - drupal-ti install
-  - composer run-script drupal-phpunit-upgrade
+#  - composer run-script drupal-phpunit-upgrade
 
 before_script:
   - drupal-ti before_script
