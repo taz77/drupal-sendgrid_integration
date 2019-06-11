@@ -43,7 +43,7 @@ env:
     #- DRUPAL_TI_INSTALL_PROFILE="testing"
 
     # The drush version to use, by default: drush/drush:8.0.*
-    - DRUPAL_TI_DRUSH_VERSION="drush/drush:~9.0"
+    - DRUPAL_TI_DRUSH_VERSION="drush/drush:9.0.*"
 
     # Drupal specific variables.
     - DRUPAL_TI_DB="drupal_travis_db"
