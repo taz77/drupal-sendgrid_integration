@@ -65,7 +65,7 @@ function sendgrid_integration_requirements($phase) {
           'value' => t('API Key Not Set'),
           'severity' => REQUIREMENT_ERROR,
           'description' => t('You need to <a href="@url">add a SendGrid API Secret Key</a> for Drupal to be able to deliver mail through SendGrid Integration.', [
-            '@url' => l(t('SendGrid'), 'admin/config/services/sendgrid'),
+            '@url' => url('admin/config/services/sendgrid'),
           ]),
         ];
       }
