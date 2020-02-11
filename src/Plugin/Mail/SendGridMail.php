@@ -232,7 +232,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $sendtosarry = explode(',', $message['to']);
       // Don't bother putting anything in "to" and "toName" for
       // multiple addresses. Only put multiple addresses in the Smtp header.
-      $sendgrid_message->setSmtpapiTos($sendtosarry);
+      // For multi addresses as per https://packagist.org/packages/fastglass/sendgrid
+      $sendgrid_message->addTo($sendtosarry);
     }
     else {
       $toaddrarray = $this->parseAddress($message['to']);
