@@ -14,7 +14,9 @@ define('SENDGRID_INTEGRATION_EMAIL_REGEX', '/^\s*"?(.+?)"?\s*<\s*([^>]+)\s*>$/')
  */
 function sendgrid_integration_xautoload($adapter) {
   $dir = drupal_get_path('module', 'sendgrid_integration') . '/vendor/composer';
-  $adapter->absolute()->composerDir($dir);
+  if (file_exists($dir)) {
+    $adapter->absolute()->composerDir($dir);
+  }
 }
 
 /**
