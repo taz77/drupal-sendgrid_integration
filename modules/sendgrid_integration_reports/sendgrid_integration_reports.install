@@ -29,7 +29,7 @@ function sendgrid_integration_reports_install() {
  * Implements hook_uninstall().
  */
 function sendgrid_integration_reports_uninstall() {
-  db_drop_table('cache_sendgrid_integration_reports');
+  \Drupal::database()->schema()->dropTable('cache_sendgrid_integration_reports');
 }
 
 /**
