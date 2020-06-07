@@ -513,6 +513,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       return TRUE;
     }
     // Default to low. Sending failed.
+    $this->logger->error('Sending emails to Sendgrid service failed with error message %message.',
+      ['%message'=> $response->getBody()->errors[0]]);
     return FALSE;
   }
 
