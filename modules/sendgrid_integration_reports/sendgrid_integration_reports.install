@@ -5,22 +5,16 @@
  * Contains install and update functions for SendGrid Integration Reports.
  */
 
-/**
- * Implements hook_disable().
- */
-function sendgrid_integration_reports_disable() {
-
-}
+use Drupal\Core\Link;
 
 /**
  * Implements hook_install().
  */
 function sendgrid_integration_reports_install() {
-  $t = get_t();
   \Drupal::messenger()
-    ->addMessage($t('You can configure SendGrid settings under Administer > Configuration > !link',
+    ->addMessage(t('You can configure SendGrid settings under Administer > Configuration > @link',
       [
-        '!link' => l($t('SendGrid settings'), 'admin/config/system/sendgrid'),
+        '@link' => Link::createFromRoute(t('SendGrid settings'), 'sendgrid_integration.settings_form')->toString(),
       ]
     ));
 }
