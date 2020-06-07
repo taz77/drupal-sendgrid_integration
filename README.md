@@ -40,7 +40,7 @@ a module with Drush. All downloading of modules now resides with composer.
 1. Start at the root of your Drupal 8 installation and issue the command
    <code>composer require drupal/sendgrid_integration</code>.
    
-2. The module will be downloaded from Drupal.org, the dependent API wrapper will 
+2. The module will be downloaded from Drupal.org, the dependency API wrapper will 
    be downloaded from Github, and your main composer.json will be updated.
 
 3. Navigate to Modules and enable SendGrid Integration in the Mail category.
