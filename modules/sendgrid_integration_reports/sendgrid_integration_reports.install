@@ -31,6 +31,6 @@ function sendgrid_integration_reports_uninstall() {
  */
 function sendgrid_integration_reports_schema() {
   $schema = [];
-  $schema['cache_sendgrid_integration_reports'] = drupal_get_schema_unprocessed('system', 'cache');
+  $schema['cache_sendgrid_integration_reports'] = drupal_get_module_schema('sendgrid_integration', 'cache');
   return $schema;
 }
