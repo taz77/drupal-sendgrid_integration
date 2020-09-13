@@ -496,7 +496,7 @@ class SendGridMailSystem implements MailSystemInterface {
     // Creating hook, allowing other modules react on sent email.
     module_invoke_all('sendgrid_integration_sent', $message['to'], $response_code, $unique_args, $response);
 
-    if ($response_code = 200) {
+    if ($response_code == 200) {
       // If the code is 200 we are good to finish and proceed.
       return TRUE;
     }
