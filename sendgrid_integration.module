@@ -40,5 +40,7 @@ function sendgrid_integration_mail($key, &$message, $params) {
   }
   if (isset($params['Reply-To']) && !empty($params['Reply-To'])) {
     $message['headers']['Reply-To'] = $params['Reply-To'];
+  } else if (isset($params['reply_to']) && !empty($params['reply_to'])) {
+      $message['headers']['Reply-To'] = $params['reply_to'];
   }
 }
