@@ -4,6 +4,7 @@ namespace Drupal\sendgrid_integration_reports\Controller;
 
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Link;
 use Drupal\Core\Logger\LoggerChannelFactory;
 use Drupal\Core\Messenger\MessengerInterface;
@@ -17,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @package Drupal\sendgrid_integration_reports\Controller
  */
-class SendGridReportsController {
+class SendGridReportsController extends ControllerBase {
 
   /**
    * Api Key of SendGrid.
@@ -84,7 +85,7 @@ class SendGridReportsController {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config_factory'),
+      $container->get('config.factory'),
       $container->get('messenger'),
       $container->get('logger.factory')
     );
