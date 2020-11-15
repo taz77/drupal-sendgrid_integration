@@ -21,7 +21,7 @@
   ],
   "support": {
     "issues": "https://drupal.org/project/issues/sendgrid_integration",
-    "source": "http://cgit.drupalcode.org/sendgrid_integration"
+    "source": "https://git.drupalcode.org/project/sendgrid_integration"
   },
   "minimum-stability": "dev",
   "require": {
