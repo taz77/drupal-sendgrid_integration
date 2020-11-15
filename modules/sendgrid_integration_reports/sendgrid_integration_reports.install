@@ -18,19 +18,3 @@ function sendgrid_integration_reports_install() {
       ]
     ));
 }
-
-/**
- * Implements hook_uninstall().
- */
-function sendgrid_integration_reports_uninstall() {
-  \Drupal::database()->schema()->dropTable('cache_sendgrid_integration_reports');
-}
-
-/**
- * Implements hook_schema().
- */
-function sendgrid_integration_reports_schema() {
-  $schema = [];
-  $schema['cache_sendgrid_integration_reports'] = drupal_get_module_schema('sendgrid_integration', 'cache');
-  return $schema;
-}
