@@ -7,8 +7,8 @@
  * Provides module configuration and help functionality.
  */
 
-use Drupal\Core\Site\Settings;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Site\Settings;
 
 /**
  * Implements hook_help().
@@ -19,7 +19,7 @@ function sendgrid_integration_help($route_name, RouteMatchInterface $route_match
     case 'help.page.sendgrid_integration':
       $output .= '<h3>' . \Drupal::translation()->translate('About') . '</h3>';
       $output .= '<p>' . \Drupal::translation()
-        ->translate('Module provides own implementation of MailSystemIntegration, replacing the default implementation and uses SendGrid Web API instead.') . '</p>';
+          ->translate('Module provides own implementation of MailSystemIntegration, replacing the default implementation and uses SendGrid Web API instead.') . '</p>';
   }
   return $output;
 }
@@ -36,11 +36,15 @@ function sendgrid_integration_mail($key, &$message, $params) {
     $params['body']
   );
   if ($params['include_test_attachment']) {
-    $message['attachments'][] = \Drupal::service('file_system')->realpath('core/misc/druplicon.png');
+    $message['attachments'][] = \Drupal::service('file_system')
+      ->realpath('core/misc/druplicon.png');
   }
   if (isset($params['Reply-To']) && !empty($params['Reply-To'])) {
     $message['headers']['Reply-To'] = $params['Reply-To'];
-  } else if (isset($params['reply_to']) && !empty($params['reply_to'])) {
+  }
+  else {
+    if (isset($params['reply_to']) && !empty($params['reply_to'])) {
       $message['headers']['Reply-To'] = $params['reply_to'];
+    }
   }
 }
