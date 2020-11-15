@@ -14,7 +14,8 @@ function sendgrid_integration_reports_install() {
   \Drupal::messenger()
     ->addMessage(t('You can configure SendGrid settings under Administer > Configuration > @link',
       [
-        '@link' => Link::createFromRoute(t('SendGrid settings'), 'sendgrid_integration.settings_form')->toString(),
+        '@link' => Link::createFromRoute(t('SendGrid settings'), 'sendgrid_integration.settings_form')
+          ->toString(),
       ]
     ));
 }

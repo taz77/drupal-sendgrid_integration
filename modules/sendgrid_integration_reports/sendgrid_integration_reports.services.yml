@@ -4,4 +4,4 @@ services:
     tags:
       - { name: cache.bin }
     factory: cache_factory:get
-    arguments: [sendgrid_integration_reports]
+    arguments: [ sendgrid_integration_reports ]

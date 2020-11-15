@@ -2,14 +2,14 @@
 
 namespace Drupal\sendgrid_integration_reports\Controller;
 
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
 use GuzzleHttp\Client;
-use Drupal\Component\Utility\Xss;
 use GuzzleHttp\Exception\ClientException;
-use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Logger\LoggerChannelFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -69,7 +69,8 @@ class SendGridReportsController {
     $this->messenger = $messenger;
     $this->loggerFactory = $logger_factory;
     // Load key from variables and throw errors if not there.
-    $this->apiKey = $this->configFactory->get('sendgrid_integration.settings')->get('apikey');
+    $this->apiKey = $this->configFactory->get('sendgrid_integration.settings')
+      ->get('apikey');
     // Display message one time if api key is not set.
     if (empty($this->apiKey)) {
       $this->loggerFactory->get('sendgrid_integration_reports')
@@ -205,9 +206,12 @@ class SendGridReportsController {
       'message' => [
         '#markup' => t('The following reports are the from the Global Statistics provided by SendGrid. For more comprehensive data, please visit your @dashboard. @cache to ensure the data is current. @settings to alter the time frame of this data.',
           [
-            '@dashboard' => Link::fromTextAndUrl(t('SendGrid Dashboard'), Url::fromUri('//app.sendgrid.com/'))->toString(),
-            '@cache' => Link::createFromRoute(t('Clear your cache'), 'system.performance_settings')->toString(),
-            '@settings' => Link::createFromRoute(t('Change your settings'), 'sendgrid_integration_reports.settings_form')->toString(),
+            '@dashboard' => Link::fromTextAndUrl(t('SendGrid Dashboard'), Url::fromUri('//app.sendgrid.com/'))
+              ->toString(),
+            '@cache' => Link::createFromRoute(t('Clear your cache'), 'system.performance_settings')
+              ->toString(),
+            '@settings' => Link::createFromRoute(t('Change your settings'), 'sendgrid_integration_reports.settings_form')
+              ->toString(),
           ]
         ),
       ],
@@ -290,7 +294,8 @@ class SendGridReportsController {
     }
 
     // Get config.
-    $config = $this->configFactory->get('sendgrid_integration_reports.settings')->get();
+    $config = $this->configFactory->get('sendgrid_integration_reports.settings')
+      ->get();
     if ($start_date) {
       $start_date = date('Y-m-d', strtotime($start_date));
     }

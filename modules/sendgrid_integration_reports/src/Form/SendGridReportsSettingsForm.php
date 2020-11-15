@@ -115,7 +115,7 @@ class SendGridReportsSettingsForm extends ConfigFormBase {
         $form['sendgrid_integration_reports']['start_date'],
         t('The %start could not be later than %end.', [
           '%start' => $form['sendgrid_integration_reports']['start_date']['#title'],
-          '%end'   => $form['sendgrid_integration_reports']['end_date']['#title'],
+          '%end' => $form['sendgrid_integration_reports']['end_date']['#title'],
         ])
       );
     }

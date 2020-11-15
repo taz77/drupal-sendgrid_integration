@@ -41,7 +41,7 @@
           pointSize: 5,
           hAxis: {format: 'MM/dd/yyyy'},
           legend: {position: 'bottom'},
-          vAxis: {viewWindowMode: "explicit", viewWindow:{ min: 0 }}
+          vAxis: {viewWindowMode: "explicit", viewWindow: {min: 0}}
         };
 
         const chart0 = new google.visualization.LineChart(document.getElementById('sendgrid-global-volume-chart'));
