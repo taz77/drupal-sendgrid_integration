@@ -286,7 +286,7 @@ class SendGridMailSystem implements MailSystemInterface {
           break;
 
         case 'reply-to':
-          $sendgrid_message->setReplyTo($message['headers']['$key']);
+          $sendgrid_message->setReplyTo($message['headers'][$key]);
 
           break;
       }
