@@ -4,6 +4,7 @@
   "type": "drupal-module",
   "homepage": "https://www.drupal.org/project/sendgrid_integration",
   "license": "GPL v2",
+  "version": "8.x-2.0-alpha1",
   "authors": [
     {
       "name": "Brady Owens (perignon)",
@@ -25,7 +26,7 @@
   },
   "minimum-stability": "dev",
   "require": {
-    "fastglass/sendgrid": "~1.0.10",
+    "fastglass/sendgrid": "~2.0.0",
     "html2text/html2text": "^4.3.1"
   }
 }
