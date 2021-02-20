@@ -351,7 +351,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
                       // Check whether the encoding is base64, and if so, decode it.
                       if (mb_strtolower($body_part2_encoding) == 'base64') {
                         // Save the decoded HTML content.
-                        $sendgrid_message->addContent('text/html', base64_decode($body_part2);
+                        $sendgrid_message->addContent('text/html', base64_decode($body_part2));
                       }
                       else {
                         // Save the HTML content.
@@ -390,11 +390,12 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
               $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
           }
           break;
+          // End Content-type parsing
 
         case 'reply-to':
           $sendreplyto = $this->parseAddress($message['headers'][$key]);
           $reply_to = new ReplyTo($sendreplyto[0], isset($sendreplyto[1]) ? $sendreplyto[1] : NULL);
-          $sendgrid_message->setReplyTo($reply_to)
+          $sendgrid_message->setReplyTo($reply_to);
           break;
       }
 
