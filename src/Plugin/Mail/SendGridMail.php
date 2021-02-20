@@ -452,49 +452,56 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
         if (is_file($attachmentitem)) {
           try {
             $attach = new Attachment();
-            $attachmentforprocessing = $this->getAttachmentStruct($attachmentitem);
-            $attach->setContent($attachmentforprocessing['content']);
-            $attach->setType($attachmentforprocessing['type']);
-            $attach->setFilename($attachmentforprocessing['filename']);
+            $struct = $this->getAttachmentStruct($attachmentitem);
+            $attach->setContent($struct['content']);
+            $attach->setType($struct['type']);
+            $attach->setFilename($struct['filename']);
+            $attach->setDisposition("attachment");
+            $sendgrid_message->addAttachment($attach);
           }
           catch (SendgridException $e) {
-
+            $this->logger->error('Attachment processing failed' . $e->getMessage());
           }
 
 
         }
       }
     }
-    elseif (isset($message['params']['attachments']) && !empty($message['params']['attachments'])) {
+
+    // The Mime Mail module (mimemail) expects attachments as an array of file
+    // arrays in $message['params']['attachments']. As many modules assume you
+    // will be using Mime Mail to handle attachments, we need to parse this
+    // array as well.
+    if (isset($message['params']['attachments']) && !empty($message['params']['attachments'])) {
       foreach ($message['params']['attachments'] as $attachment) {
-        // Get filepath.
-        if (isset($attachment['filepath']) && is_file($attachment['filepath'])) {
-          $filepath = $attachment['filepath'];
+        $attach = new Attachment();
+        if (isset($attachment['uri'])) {
+          $attachment_path = \Drupal::service('file_system')->realpath($attachment['uri']);
+          if (is_file($attachment_path)) {
+            $struct = $this->getAttachmentStruct($attachment_path);
+            // Allow for customised filenames.
+            if (!empty($attachment['filename'])) {
+              $struct['name'] = $attachment['filename'];
+            }
+            $attach->setContent($struct['content']);
+            $attach->setType($struct['type']);
+            $attach->setFilename($struct['filename']);
+            $attach->setDisposition("attachment");
+            $sendgrid_message->addAttachment($attach);
+          }
         }
-        elseif (isset($attachment['file']) && $attachment['file'] instanceof FileInterface) {
-          $filepath = \Drupal::service('file_system')
-            ->realpath($attachment['file']->getFileUri());
+        // Support attachments that are directly included without a file in the
+        // filesystem.
+        elseif (isset($attachment['filecontent'])) {
+          $attach->setFilename($attachment['filename']);
+          $attach->setType($attachment['filemime']);
+          $attach->setContent(chunk_split(base64_encode($attachment['filecontent'])));
+          $sendgrid_message->addAttachment($attach);
         }
-        else {
-          continue;
-        }
-
-        // Get filename.
-        if (isset($attachment['filename'])) {
-          $filename = $attachment['filename'];
-        }
-        else {
-          $filename = basename($filepath);
-        }
-
-        // Attach file.
-        $attachments[$filename] = $filepath;
       }
-    }
-
-    // If we have attachments, add them.
-    if (!empty($attachments)) {
-      $sendgrid_message->setAttachments($attachments);
+      // Remove the file objects from $message['params']['attachments'].
+      // (This prevents double-attaching in the drupal_alter hook below.)
+      unset($message['params']['attachments']);
     }
 
     // Add template ID.
@@ -507,10 +514,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $sendgrid_message->setSubstitutions($message['sendgrid']['substitutions']);
     }
 
-
     // Add the finished personalization object.
     $sendgrid_message->addPersonalization($personalization0);
-
 
     // Lets try and send the message and catch the error.
     try {
