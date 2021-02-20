@@ -367,14 +367,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
                     // Clean up the text.
                     $body_part = trim($this->removeHeaders(trim($body_part)));
                     // Set the text message.
-                    $sendgrid_message->setText(MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($body_part)));
+                    $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($body_part)));
                   }
                   // If text/html within the body part, add it to $mailer->Body.
                   elseif (strpos($body_part, 'text/html')) {
                     // Clean up the text.
                     $body_part = trim($this->removeHeaders(trim($body_part)));
                     // Set the HTML message.
-                    $sendgrid_message->setHtml($body_part);
+                    $sendgrid_message->addContent('text/html', $body_part);
                   }
                 }
               }
@@ -386,7 +386,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
                 ->addError(t('The %header of your message is not supported by SendGrid and will be sent as text/plain instead.', ['%header' => "Content-Type: $value"]));
               $this->logger->error("The Content-Type: $value of your message is not supported by PHPMailer and will be sent as text/plain instead.");
               // Force the email to be text.
-              $sendgrid_message->setText(MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
+              $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
           }
           break;
 
