@@ -73,6 +73,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    */
   protected $queueFactory;
 
+
+  /**
+   * The MIME Type Guesser service.
+   *
+   * @var \Drupal\Core\File\MimeType\MimeTypeGuesser
+   */
+  protected $mimeTypeGuesser;
+
   /**
    * SendGridMailSystem constructor.
    *
@@ -99,6 +107,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     $this->logger = $loggerChannelFactory->get('sendgrid_integration');
     $this->moduleHandler = $moduleHandler;
     $this->queueFactory = $queueFactory;
+    $this->mimeTypeGuesser = \Drupal::service('file.mime_type.guesser');
   }
 
   /**
@@ -437,11 +446,22 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     // Prepare message attachments and params attachments.
     $attachments = [];
     if (isset($message['attachments']) && !empty($message['attachments'])) {
-      $attach = new Attachment();
+
 
       foreach ($message['attachments'] as $attachmentitem) {
         if (is_file($attachmentitem)) {
-          $attachments[$attachmentitem] = $attachmentitem;
+          try {
+            $attach = new Attachment();
+            $attachmentforprocessing = $this->getAttachmentStruct($attachmentitem);
+            $attach->setContent($attachmentforprocessing['content']);
+            $attach->setType($attachmentforprocessing['type']);
+            $attach->setFilename($attachmentforprocessing['filename']);
+          }
+          catch (SendgridException $e) {
+
+          }
+
+
         }
       }
     }
@@ -655,8 +675,12 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * Split an email address into it's name and address components.
    * Returns an array with the first element as the email address and the
    * second element as the name.
+   *
+   * @param $email string
+   *
+   * @return array
    */
-  protected function parseAddress($email): array {
+  protected function parseAddress(string $email): array {
     if (preg_match(self::SENDGRID_INTEGRATION_EMAIL_REGEX, $email, $matches)) {
       return [$matches[2], $matches[1]];
     }
@@ -676,7 +700,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    *
    * @throws \Exception
    */
-  public function getAttachmentStruct($path): array {
+  public function getAttachmentStruct(string $path): array {
     $struct = [];
     if (!@is_file($path)) {
       throw new \Exception($path . ' is not a valid file.');
@@ -689,7 +713,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       throw new \Exception($mime_type . ' is not a valid content type.');
     }
     $struct['type'] = $mime_type;
-    $struct['name'] = $filename;
+    $struct['filename'] = $filename;
     $struct['content'] = $file_buffer;
     return $struct;
   }
@@ -703,7 +727,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * @return bool
    *   True or false.
    */
-  protected function isValidContentType($file_type): bool {
+  protected function isValidContentType(string $file_type): bool {
     $valid_types = [
       'image/',
       'text/',
