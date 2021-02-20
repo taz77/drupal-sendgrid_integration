@@ -19,6 +19,7 @@ use SendGrid\Mail\BccSettings;
 use SendGrid\Mail\Mail;
 use SendGrid\Mail\MailSettings;
 use SendGrid\Mail\Personalization;
+use SendGrid\Mail\ReplyTo;
 use SendGrid\Mail\SandBoxMode;
 use SendGrid\Mail\Subject;
 
@@ -391,7 +392,9 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
           break;
 
         case 'reply-to':
-          $sendgrid_message->setReplyTo($message['headers'][$key]);
+          $sendreplyto = $this->parseAddress($message['headers'][$key]);
+          $reply_to = new ReplyTo($sendreplyto[0], isset($sendreplyto[1]) ? $sendreplyto[1] : NULL);
+          $sendgrid_message->setReplyTo($reply_to)
           break;
       }
 
