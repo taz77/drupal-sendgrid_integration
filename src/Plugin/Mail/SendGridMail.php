@@ -15,7 +15,9 @@ use Html2Text\Html2Text;
 use SendGrid\Client;
 use SendGrid\Exception\SendgridException;
 use SendGrid\Mail\Attachment;
+use SendGrid\Mail\Bcc;
 use SendGrid\Mail\BccSettings;
+use SendGrid\Mail\Cc;
 use SendGrid\Mail\Mail;
 use SendGrid\Mail\MailSettings;
 use SendGrid\Mail\Personalization;
@@ -126,6 +128,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}
+   * @throws \SendGrid\Exception\SendgridException
    */
   public function mail(array $message) {
     # Begin by creating instances of objects needed.
@@ -247,9 +250,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $personalization0->addTo(new To($toaddrarray[0], isset($toaddrarray[1])) ? $toaddrarray[1] : NULL);
     }
 
-    // Add cc and bcc in mail if they exist.
-    $cc_bcc_keys = ['cc', 'bcc'];
-    $address_cc_bcc = [];
+
 
     // Beginning of consolidated header parsing.
     foreach ($message['headers'] as $key => $value) {
@@ -399,6 +400,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
           break;
       }
 
+      // -----------------------
+      // BCC and CC Address Handling
+      // -----------------------
+      // Array to use for processing bcc and cc options.
+      $cc_bcc_keys = ['cc', 'bcc'];
+      // Empty array to process addresses.
+      $address_cc_bcc = [];
+
       // Handle latter case issue for cc and bcc key.
       if (in_array(mb_strtolower($key), $cc_bcc_keys)) {
         $mail_ids = explode(',', $value);
@@ -413,16 +422,17 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
     if (array_key_exists('cc', $address_cc_bcc)) {
       foreach ($address_cc_bcc['cc'] as $item) {
-        $sendgrid_message->addCc($item['mail']);
-        $sendgrid_message->addCcName($item['name']);
+        $personalization0->addCc(new Cc($item['mail'], $item['name']));
       }
     }
     if (array_key_exists('bcc', $address_cc_bcc)) {
       foreach ($address_cc_bcc['bcc'] as $item) {
-        $sendgrid_message->addBcc($item['mail']);
-        $sendgrid_message->addBccName($item['name']);
+        $personalization0->addBcc(new Bcc($item['mail'], $item['name']));
       }
     }
+    // -----------------------
+    // END - BCC and CC Address Handling
+    // -----------------------
 
     // Prepare message attachments and params attachments.
     $attachments = [];
