@@ -557,7 +557,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    *   A string with the text found between the $beginning_character and the
    *   $ending_character.
    */
-  protected function getSubString($source, $target, $beginning_character, $ending_character) {
+  protected function getSubString($source, $target, $beginning_character, $ending_character): string {
     $search_start = strpos($source, $target) + 1;
     $first_character = strpos($source, $beginning_character, $search_start) + 1;
     $second_character = strpos($source, $ending_character, $first_character) + 1;
@@ -585,7 +585,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * @return array
    *   An array containing the resulting mime parts
    */
-  protected function boundrySplit($input, $boundary) {
+  protected function boundrySplit($input, $boundary): array {
     $parts = [];
     $bs_possible = mb_substr($boundary, 2, -2);
     $bs_check = '\"' . $bs_possible . '\"';
@@ -614,7 +614,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * @return string
    *   A string with the stripped body part.
    */
-  protected function removeHeaders($input) {
+  protected function removeHeaders($input): string {
     $part_array = explode("\n", $input);
 
     // Will strip these headers according to RFC2045.
