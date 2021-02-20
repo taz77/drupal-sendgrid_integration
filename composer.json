@@ -23,7 +23,12 @@
     "issues": "https://drupal.org/project/issues/sendgrid_integration",
     "source": "https://git.drupalcode.org/project/sendgrid_integration"
   },
-  "minimum-stability": "dev",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/taz77/sendgrid-php-ng"
+    }
+  ],
   "require": {
     "fastglass/sendgrid": "~1.0.10",
     "html2text/html2text": "^4.3.1"
