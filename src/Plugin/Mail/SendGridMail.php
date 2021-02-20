@@ -15,8 +15,11 @@ use Html2Text\Html2Text;
 use SendGrid\Client;
 use SendGrid\Exception\SendgridException;
 use SendGrid\Mail\Attachment;
+use SendGrid\Mail\BccSettings;
 use SendGrid\Mail\Mail;
+use SendGrid\Mail\MailSettings;
 use SendGrid\Mail\Personalization;
+use SendGrid\Mail\SandBoxMode;
 use SendGrid\Mail\Subject;
 
 use SendGrid\Mail\To;
@@ -127,6 +130,9 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     # Begin by creating instances of objects needed.
     $personalization0 = new Personalization();
     $sendgrid_message = new Mail();
+    $mail_settings = new MailSettings();
+    $bcc_settings = new BccSettings();
+    $sandbox_mode = new SandBoxMode();
 
     $site_config = $this->configFactory->get('system.site');
     $sendgrid_config = $this->configFactory->get('sendgrid_integration.settings');
@@ -173,7 +179,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
     # Add UID metadata to the message that matches the drupal user ID.
     if (isset($message['params']['account']->uid)) {
-      $mail->addCustomArg("uid", strval($message['params']['account']->uid));
+      $sendgrid_message->addCustomArg("uid", strval($message['params']['account']->uid));
     }
 
     // Checking if 'From' email-address already exists.
@@ -226,7 +232,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     else {
       $sendgrid_message->setFrom($data['from']);
     }
-    
+
     // If there are multiple recipients we have to explode and walk the values.
     if (strpos($message['to'], ',')) {
       $sendtosarry = explode(',', $message['to']);
@@ -266,7 +272,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
           switch ($vars[0]) {
             case 'text/plain':
               // The message includes only a plain text part.
-              $sendgrid_message->setText(MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
+              $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
               break;
 
             case 'text/html':
@@ -277,20 +283,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
               }
 
               // The message includes only an HTML part.
-              $sendgrid_message->setHtml($body);
+              $sendgrid_message->addContent('text/html', $body);
 
               // Also include a text only version of the email.
               $converter = new Html2Text($message['body']);
               $body_plain = $converter->getText();
-              $sendgrid_message->setText(MailFormatHelper::wrapMail($body_plain));
+              $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail($body_plain));
               break;
 
-            case 'multipart/related':
-              // @todo determine how to handle this content type.
-              // Get the boundary ID from the Content-Type header.
-              $boundary = $this->getSubString($message['body'], 'boundary', '"', '"');
-
-              break;
 
             case 'multipart/alternative':
               // Get the boundary ID from the Content-Type header.
@@ -305,14 +305,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
                   // Clean up the text.
                   $body_part = trim($this->removeHeaders(trim($body_part)));
                   // Include it as part of the mail object.
-                  $sendgrid_message->setText(MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($body_part)));
+                  $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($body_part)));
                 }
                 // If plain/html within the body part, add it to $mailer->Body.
                 elseif (strpos($body_part, 'text/html')) {
                   // Clean up the text.
                   $body_part = trim($this->removeHeaders(trim($body_part)));
                   // Include it as part of the mail object.
-                  $sendgrid_message->setHtml($body_part);
+                  $sendgrid_message->addContent('text/html', $body_part);
                 }
               }
               break;
@@ -339,7 +339,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
                     if (strpos($body_part2, 'text/plain')) {
                       // Clean up the text.
                       $body_part2 = trim($this->removeHeaders(trim($body_part2)));
-                      $sendgrid_message->setText(MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($body_part2)));
+                      $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($body_part2)));
                     }
                     // If plain/html within the body part, add it to $mailer->Body.
                     elseif (strpos($body_part2, 'text/html')) {
@@ -350,11 +350,11 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
                       // Check whether the encoding is base64, and if so, decode it.
                       if (mb_strtolower($body_part2_encoding) == 'base64') {
                         // Save the decoded HTML content.
-                        $sendgrid_message->setHtml(base64_decode($body_part2));
+                        $sendgrid_message->addContent('text/html', base64_decode($body_part2);
                       }
                       else {
                         // Save the HTML content.
-                        $sendgrid_message->setHtml($body_part2);
+                        $sendgrid_message->addContent('text/html', $body_part2);
                       }
                     }
                   }
@@ -471,6 +471,11 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $sendgrid_message->setSubstitutions($message['sendgrid']['substitutions']);
     }
 
+
+    // Add the finished personalization object.
+    $sendgrid_message->addPersonalization($personalization0);
+
+
     // Lets try and send the message and catch the error.
     try {
       $response = $client->send($sendgrid_message);
@@ -502,7 +507,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       return FALSE;
     }
     // Creating hook, allowing other modules react on sent email.
-    $hook_args = [$message['to'], $unique_args, $response];
+    $hook_args = [$message['to'], $response];
     $this->moduleHandler->invokeAll('sendgrid_integration_sent', $hook_args);
 
     if ($response->getCode() == 200) {
