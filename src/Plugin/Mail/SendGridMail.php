@@ -13,8 +13,13 @@ use Drupal\Core\Queue\QueueFactory;
 use Drupal\file\FileInterface;
 use Html2Text\Html2Text;
 use SendGrid\Client;
-use SendGrid\Email;
-use SendGrid\Exception;
+use SendGrid\Exception\SendgridException;
+use SendGrid\Mail\Attachment;
+use SendGrid\Mail\Mail;
+use SendGrid\Mail\Personalization;
+use SendGrid\Mail\Subject;
+
+use SendGrid\Mail\To;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -119,6 +124,10 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function mail(array $message) {
+    # Begin by creating instances of objects needed.
+    $personalization0 = new Personalization();
+    $sendgrid_message = new Mail();
+
     $site_config = $this->configFactory->get('system.site');
     $sendgrid_config = $this->configFactory->get('sendgrid_integration.settings');
 
@@ -148,35 +157,23 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     ];
     // Create a new SendGrid object.
     $client = new Client($key_secret, $options);
-    $sendgrid_message = new Email();
+
     $sitename = $site_config->get('name');
-    // Defining default unique args.
-    $unique_args = [
-      'id' => $message['id'],
-      'module' => $message['module'],
-    ];
+
     // If this is a password reset. Bypass spam filters.
     if (strpos($message['id'], 'password')) {
-      $sendgrid_message->addFilter('bypass_list_management', 'enable', 1);
+      $spam_check = new SpamCheck();
+      $spam_check->setEnable(FALSE);
     }
     // If this is a Drupal Commerce message. Bypass spam filters.
     if (strpos($message['id'], 'commerce')) {
-      $sendgrid_message->addFilter('bypass_list_management', 'enable', 1);
+      $spam_check = new SpamCheck();
+      $spam_check->setEnable(FALSE);
     }
 
+    # Add UID metadata to the message that matches the drupal user ID.
     if (isset($message['params']['account']->uid)) {
-      $unique_args['uid'] = $message['params']['account']->uid;
-    }
-
-    // Allow other modules to modify unique arguments.
-    $args = $this->moduleHandler->invokeAll('sendgrid_integration_unique_args_alter', [
-      $unique_args,
-      $message,
-    ]);
-
-    // Check if we got any variable back.
-    if (!empty($args)) {
-      $unique_args = $args;
+      $mail->addCustomArg("uid", strval($message['params']['account']->uid));
     }
 
     // Checking if 'From' email-address already exists.
@@ -216,29 +213,31 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $categories = $result;
     }
 
-    $sendgrid_message
-      ->setFrom($data['from'])
-      ->setSubject($message['subject'])
-      ->setCategories($categories)
-      ->setUniqueArgs($unique_args);
+    $sendgrid_message->addCategories($categories);
+
+    $personalization0->setSubject($message['subject']);
+    $sendgrid_message->setFrom($data['from']);
+
+    # Set the from address and add a name if it exists.
     if (!empty($data['fromname'])) {
       $sendgrid_message->setFromName($data['fromname']);
+      $sendgrid_message->setFrom($data['from'], $data['fromname']);
     }
-
-    // If there are multiple recipients we use a different method for To:
+    else {
+      $sendgrid_message->setFrom($data['from']);
+    }
+    
+    // If there are multiple recipients we have to explode and walk the values.
     if (strpos($message['to'], ',')) {
       $sendtosarry = explode(',', $message['to']);
-      // Don't bother putting anything in "to" and "toName" for
-      // multiple addresses. Only put multiple addresses in the Smtp header.
-      // For multi addresses as per https://packagist.org/packages/fastglass/sendgrid
-      $sendgrid_message->addTo($sendtosarry);
+      foreach ($sendtosarry as $value) {
+        $sendtoarrayparsed = $this->parseAddress($value);
+        $personalization0->addTo(new To($sendtoarrayparsed[0], isset($sendtoarrayparsed[1])) ? $sendtoarrayparsed[1] : NULL);
+      }
     }
     else {
       $toaddrarray = $this->parseAddress($message['to']);
-      $sendgrid_message->addTo($toaddrarray[0]);
-      if (!empty($toaddrarray[1])) {
-        $sendgrid_message->addToName($toaddrarray[1]);
-      }
+      $personalization0->addTo(new To($toaddrarray[0], isset($toaddrarray[1])) ? $toaddrarray[1] : NULL);
     }
 
     // Add cc and bcc in mail if they exist.
@@ -400,7 +399,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       if (in_array(mb_strtolower($key), $cc_bcc_keys)) {
         $mail_ids = explode(',', $value);
         foreach ($mail_ids as $mail_id) {
-          list($mail_cc_address, $cc_name) = $this->parseAddress($mail_id);
+          [$mail_cc_address, $cc_name] = $this->parseAddress($mail_id);
           $address_cc_bcc[mb_strtolower($key)][] = [
             'mail' => $mail_cc_address,
             'name' => $cc_name,
@@ -633,13 +632,15 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
   /**
    * Split an email address into it's name and address components.
+   * Returns an array with the first element as the email address and the
+   * second element as the name.
    */
   protected function parseAddress($email) {
     if (preg_match(self::SENDGRID_INTEGRATION_EMAIL_REGEX, $email, $matches)) {
       return [$matches[2], $matches[1]];
     }
     else {
-      return [$email, ' '];
+      return [$email, NULL];
     }
   }
 
