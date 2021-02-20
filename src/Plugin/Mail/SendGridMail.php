@@ -437,6 +437,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     // Prepare message attachments and params attachments.
     $attachments = [];
     if (isset($message['attachments']) && !empty($message['attachments'])) {
+      $attach = new Attachment();
+
       foreach ($message['attachments'] as $attachmentitem) {
         if (is_file($attachmentitem)) {
           $attachments[$attachmentitem] = $attachmentitem;
@@ -654,13 +656,68 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * Returns an array with the first element as the email address and the
    * second element as the name.
    */
-  protected function parseAddress($email) {
+  protected function parseAddress($email): array {
     if (preg_match(self::SENDGRID_INTEGRATION_EMAIL_REGEX, $email, $matches)) {
       return [$matches[2], $matches[1]];
     }
     else {
       return [$email, NULL];
     }
+  }
+
+  /**
+   * Return an array structure for a message attachment.
+   *
+   * @param string $path
+   *   Attachment path.
+   *
+   * @return array
+   *   Attachment structure.
+   *
+   * @throws \Exception
+   */
+  public function getAttachmentStruct($path): array {
+    $struct = [];
+    if (!@is_file($path)) {
+      throw new \Exception($path . ' is not a valid file.');
+    }
+    $filename = basename($path);
+    $file_buffer = file_get_contents($path);
+    $file_buffer = chunk_split(base64_encode($file_buffer), 76, "\n");
+    $mime_type = $this->mimeTypeGuesser->guess($path);
+    if (!$this->isValidContentType($mime_type)) {
+      throw new \Exception($mime_type . ' is not a valid content type.');
+    }
+    $struct['type'] = $mime_type;
+    $struct['name'] = $filename;
+    $struct['content'] = $file_buffer;
+    return $struct;
+  }
+
+  /**
+   * Helper to determine if an attachment is valid.
+   *
+   * @param string $file_type
+   *   The file mime type.
+   *
+   * @return bool
+   *   True or false.
+   */
+  protected function isValidContentType($file_type): bool {
+    $valid_types = [
+      'image/',
+      'text/',
+      'application/pdf',
+      'application/x-zip',
+    ];
+    // Allow modules to alter the valid types array.
+    \Drupal::moduleHandler()->alter('sendgrid_integration_valid_attachment_types', $valid_types);
+    foreach ($valid_types as $vct) {
+      if (strpos($file_type, $vct) !== FALSE) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
 }
