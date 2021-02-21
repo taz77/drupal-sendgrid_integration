@@ -17,6 +17,7 @@ use SendGrid\Mail\Attachment;
 use SendGrid\Mail\Bcc;
 use SendGrid\Mail\Cc;
 use SendGrid\Mail\ClickTracking;
+use SendGrid\Mail\From;
 use SendGrid\Mail\Mail;
 use SendGrid\Mail\OpenTracking;
 use SendGrid\Mail\Personalization;
@@ -196,11 +197,12 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     if (isset($message['headers']['From'])) {
       $fromaddrarray = $this->parseAddress($message['headers']['From']);
       $data['from'] = $fromaddrarray[0];
-      $data['fromname'] = $fromaddrarray[1];
+      $data['fromname'] = strval($fromaddrarray[1]);
+      unset($fromaddrarray);
     }
     else {
       $data['from'] = $site_config->get('mail');
-      $data['fromname'] = $sitename;
+      $data['fromname'] = strval($sitename);
     }
 
     // Check if $send is set to be true.
@@ -230,12 +232,11 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
 
     $sendgrid_message->addCategories($categories);
-
     $personalization0->setSubject($message['subject']);
-    $sendgrid_message->setFrom($data['from']);
-
+    $from = new From($data['from'], $data['fromname']);
+    unset($data);
     # Set the from address and add a name if it exists.
-    $sendgrid_message->setFrom($data['from'], !empty($data['fromname'] ? $data['fromname'] : NULL));
+    $sendgrid_message->setFrom($from);
 
     // If there are multiple recipients we have to explode and walk the values.
     if (strpos($message['to'], ',')) {
@@ -247,9 +248,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
     else {
       $toaddrarray = $this->parseAddress($message['to']);
-      $personalization0->addTo(new To($toaddrarray[0], isset($toaddrarray[1])) ? $toaddrarray[1] : NULL);
+      if (isset($toaddrarray[1])) {
+        $toname = $toaddrarray[1];
+      }
+      else {
+        $toname = NULL;
+      }
+      $personalization0->addTo(new To($toaddrarray[0], $toname));
     }
-
 
     // Beginning of consolidated header parsing.
     foreach ($message['headers'] as $key => $value) {
@@ -481,6 +487,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
               $attach->setDisposition("attachment");
             }
             catch (SendgridException $e) {
+              $json = json_decode($e->getMessage());
               if ($e instanceof SendgridException) {
                 $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
               }
@@ -715,14 +722,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    *
    * @param $email string
    *
-   * @return array
+   * @return mixed
    */
-  protected function parseAddress(string $email): array {
+  protected function parseAddress(string $email) {
     if (preg_match(self::SENDGRID_INTEGRATION_EMAIL_REGEX, $email, $matches)) {
-      return [$matches[2], $matches[1]];
+      return [$matches[2], strval($matches[1])];
     }
     else {
-      return [$email, NULL];
+      return [$email];
     }
   }
 
