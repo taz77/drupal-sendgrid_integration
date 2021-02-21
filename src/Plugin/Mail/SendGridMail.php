@@ -18,14 +18,17 @@ use SendGrid\Mail\Attachment;
 use SendGrid\Mail\Bcc;
 use SendGrid\Mail\BccSettings;
 use SendGrid\Mail\Cc;
+use SendGrid\Mail\ClickTracking;
 use SendGrid\Mail\Mail;
 use SendGrid\Mail\MailSettings;
+use SendGrid\Mail\OpenTracking;
 use SendGrid\Mail\Personalization;
 use SendGrid\Mail\ReplyTo;
 use SendGrid\Mail\SandBoxMode;
 use SendGrid\Mail\Subject;
 
 use SendGrid\Mail\To;
+use SendGrid\Mail\TrackingSettings;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -260,7 +263,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
 
 
-
     // Beginning of consolidated header parsing.
     foreach ($message['headers'] as $key => $value) {
       switch (mb_strtolower($key)) {
@@ -400,7 +402,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
               $sendgrid_message->addContent('text/plain', MailFormatHelper::wrapMail(MailFormatHelper::htmlToText($message['body'])));
           }
           break;
-          // End Content-type parsing
+        // End Content-type parsing
 
         case 'reply-to':
           $sendreplyto = $this->parseAddress($message['headers'][$key]);
@@ -476,7 +478,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       foreach ($message['params']['attachments'] as $attachment) {
         $attach = new Attachment();
         if (isset($attachment['uri'])) {
-          $attachment_path = \Drupal::service('file_system')->realpath($attachment['uri']);
+          $attachment_path = \Drupal::service('file_system')
+            ->realpath($attachment['uri']);
           if (is_file($attachment_path)) {
             $struct = $this->getAttachmentStruct($attachment_path);
             // Allow for customised filenames.
@@ -516,6 +519,28 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
     // Add the finished personalization object.
     $sendgrid_message->addPersonalization($personalization0);
+
+    // Tracking settings.
+    $tracking_settings = new TrackingSettings();
+    $click_tracking = new ClickTracking();
+    if (!empty($sendgrid_config->get('trackclicks'))) {
+      $click_tracking->setEnable(TRUE);
+      $click_tracking->setEnableText(TRUE);
+    }
+    else {
+      $click_tracking->setEnable(FALSE);
+      $click_tracking->setEnableText(FALSE);
+    }
+    $tracking_settings->setClickTracking($click_tracking);
+    $open_tracking = new OpenTracking();
+    if (!empty($sendgrid_config->get('trackopens'))) {
+      $open_tracking->setEnable(TRUE);
+    }
+    else {
+      $open_tracking->setEnable(FALSE);
+    }
+    $tracking_settings->setOpenTracking($open_tracking);
+    $sendgrid_message->setTrackingSettings($tracking_settings);
 
     // Lets try and send the message and catch the error.
     try {
@@ -740,7 +765,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       'application/x-zip',
     ];
     // Allow modules to alter the valid types array.
-    \Drupal::moduleHandler()->alter('sendgrid_integration_valid_attachment_types', $valid_types);
+    \Drupal::moduleHandler()
+      ->alter('sendgrid_integration_valid_attachment_types', $valid_types);
     foreach ($valid_types as $vct) {
       if (strpos($file_type, $vct) !== FALSE) {
         return TRUE;
