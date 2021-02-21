@@ -544,6 +544,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     $tracking_settings->setOpenTracking($open_tracking);
     $sendgrid_message->setTrackingSettings($tracking_settings);
 
+    // Allow other modules to alter the Mandrill message.
+    $sendgrid_params = [
+      'message' => $sendgrid_message,
+    ];
+    \Drupal::moduleHandler()
+      ->alter('sendgrid_integration', $sendgrid_params, $message);
+
+
     // Lets try and send the message and catch the error.
     try {
       $response = $client->send($sendgrid_message);
