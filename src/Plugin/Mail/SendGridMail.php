@@ -449,6 +449,9 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
           catch (SendgridException $e) {
             $this->logger->error('Attachment processing failed' . $e->getMessage());
           }
+          catch (\Exception $e) {
+            $this->logger->error('Attachment processing failed' . $e->getMessage());
+          }
 
 
         }
@@ -466,15 +469,27 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
           $attachment_path = \Drupal::service('file_system')
             ->realpath($attachment['uri']);
           if (is_file($attachment_path)) {
-            $struct = $this->getAttachmentStruct($attachment_path);
-            // Allow for customised filenames.
-            if (!empty($attachment['filename'])) {
-              $struct['name'] = $attachment['filename'];
+            try {
+              $struct = $this->getAttachmentStruct($attachment_path);
+              // Allow for customised filenames.
+              if (!empty($attachment['filename'])) {
+                $struct['name'] = $attachment['filename'];
+              }
+              $attach->setContent($struct['content']);
+              $attach->setType($struct['type']);
+              $attach->setFilename($struct['filename']);
+              $attach->setDisposition("attachment");
             }
-            $attach->setContent($struct['content']);
-            $attach->setType($struct['type']);
-            $attach->setFilename($struct['filename']);
-            $attach->setDisposition("attachment");
+            catch (SendgridException $e) {
+              if ($e instanceof SendgridException) {
+                $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
+              }
+            }
+            catch (\Exception $e) {
+              $this->logger->error('Error processing attachments' . $e->getMessage());
+            }
+
+
             $sendgrid_message->addAttachment($attach);
           }
         }
@@ -544,7 +559,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $this->logger->error('Sending emails to Sendgrid service failed with error code ' . $e->getCode());
       $json = json_decode($e->getMessage());
       if ($e instanceof SendgridException) {
-          $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
+        $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
       }
       else {
         $this->logger->error($e->getMessage());
