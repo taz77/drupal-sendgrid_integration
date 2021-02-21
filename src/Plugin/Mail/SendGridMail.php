@@ -514,7 +514,9 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
     // Add substitutions.
     if (isset($message['sendgrid']['substitutions'])) {
-      $sendgrid_message->setSubstitutions($message['sendgrid']['substitutions']);
+      foreach ($message['sendgrid']['substitutions'] as $key => $value) {
+        $personalization0->addSubstitution($key, $value);
+      }
     }
 
     // Add the finished personalization object.
