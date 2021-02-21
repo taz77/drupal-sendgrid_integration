@@ -10,23 +10,19 @@ use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Mail\MailInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueFactory;
-use Drupal\file\FileInterface;
 use Html2Text\Html2Text;
 use SendGrid\Client;
 use SendGrid\Exception\SendgridException;
 use SendGrid\Mail\Attachment;
 use SendGrid\Mail\Bcc;
-use SendGrid\Mail\BccSettings;
 use SendGrid\Mail\Cc;
 use SendGrid\Mail\ClickTracking;
 use SendGrid\Mail\Mail;
-use SendGrid\Mail\MailSettings;
 use SendGrid\Mail\OpenTracking;
 use SendGrid\Mail\Personalization;
 use SendGrid\Mail\ReplyTo;
 use SendGrid\Mail\SandBoxMode;
-use SendGrid\Mail\Subject;
-
+use SendGrid\Mail\SpamCheck;
 use SendGrid\Mail\To;
 use SendGrid\Mail\TrackingSettings;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -146,8 +142,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     # Begin by creating instances of objects needed.
     $personalization0 = new Personalization();
     $sendgrid_message = new Mail();
-    $mail_settings = new MailSettings();
-    $bcc_settings = new BccSettings();
     $sandbox_mode = new SandBoxMode();
 
     $site_config = $this->configFactory->get('system.site');
@@ -551,17 +545,15 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     \Drupal::moduleHandler()
       ->alter('sendgrid_integration', $sendgrid_params, $message);
 
-
     // Lets try and send the message and catch the error.
     try {
       $response = $client->send($sendgrid_message);
     }
-    catch (\Exception $e) {
+    catch (SendgridException $e) {
       $this->logger->error('Sending emails to Sendgrid service failed with error code ' . $e->getCode());
-      if ($e instanceof Exception) {
-        foreach ($e->getErrors() as $error_info) {
-          $this->logger->error('Sendgrid generated error ' . $error_info);
-        }
+      $json = json_decode($e->getMessage());
+      if ($e instanceof SendgridException) {
+          $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
       }
       else {
         $this->logger->error($e->getMessage());
