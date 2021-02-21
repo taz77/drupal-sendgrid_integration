@@ -101,7 +101,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * @param \Drupal\Core\Queue\QueueFactory $queueFactory
    *   The queue factory service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory, LoggerChannelFactoryInterface $loggerChannelFactory, ModuleHandlerInterface $moduleHandler, QueueFactory $queueFactory) {
+  public function __construct(array $configuration, string $plugin_id, $plugin_definition, ConfigFactoryInterface $configFactory, LoggerChannelFactoryInterface $loggerChannelFactory, ModuleHandlerInterface $moduleHandler, QueueFactory $queueFactory) {
     $this->configFactory = $configFactory;
     $this->logger = $loggerChannelFactory->get('sendgrid_integration');
     $this->moduleHandler = $moduleHandler;
@@ -127,7 +127,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function format(array $message) {
+  public function format(array $message): array {
     // Join message array.
     $message['body'] = implode("\n\n", $message['body']);
 
@@ -138,7 +138,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * {@inheritdoc}
    * @throws \SendGrid\Exception\SendgridException
    */
-  public function mail(array $message) {
+  public function mail(array $message): bool {
     # Begin by creating instances of objects needed.
     $personalization0 = new Personalization();
     $sendgrid_message = new Mail();
@@ -419,12 +419,12 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
         }
       }
     }
-    if (array_key_exists('cc', $address_cc_bcc)) {
+    if (isset($address_cc_bcc) && array_key_exists('cc', $address_cc_bcc)) {
       foreach ($address_cc_bcc['cc'] as $item) {
         $personalization0->addCc(new Cc($item['mail'], $item['name']));
       }
     }
-    if (array_key_exists('bcc', $address_cc_bcc)) {
+    if (isset($address_cc_bcc) && array_key_exists('bcc', $address_cc_bcc)) {
       foreach ($address_cc_bcc['bcc'] as $item) {
         $personalization0->addBcc(new Bcc($item['mail'], $item['name']));
       }
@@ -575,7 +575,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
     // Default to low. Sending failed.
     $this->logger->error('Sending emails to Sendgrid service failed with error message %message.',
-      ['%message' => $response->getBody()->errors[0]]);
+      ['%message' => $response->getBody()->errors[0]->message()]);
     return FALSE;
   }
 
@@ -600,7 +600,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    *   A string with the text found between the $beginning_character and the
    *   $ending_character.
    */
-  protected function getSubString($source, $target, $beginning_character, $ending_character): string {
+  protected function getSubString(string $source, string $target, string $beginning_character, string $ending_character): string {
     $search_start = strpos($source, $target) + 1;
     $first_character = strpos($source, $beginning_character, $search_start) + 1;
     $second_character = strpos($source, $ending_character, $first_character) + 1;
@@ -628,7 +628,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * @return array
    *   An array containing the resulting mime parts
    */
-  protected function boundrySplit($input, $boundary): array {
+  protected function boundrySplit(string $input, string $boundary): array {
     $parts = [];
     $bs_possible = mb_substr($boundary, 2, -2);
     $bs_check = '\"' . $bs_possible . '\"';
@@ -657,7 +657,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    * @return string
    *   A string with the stripped body part.
    */
-  protected function removeHeaders($input): string {
+  protected function removeHeaders(string $input): string {
     $part_array = explode("\n", $input);
 
     // Will strip these headers according to RFC2045.
@@ -690,8 +690,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       }
     }
 
-    $output = implode("\n", $part_array);
-    return $output;
+    return implode("\n", $part_array);
   }
 
   /**
