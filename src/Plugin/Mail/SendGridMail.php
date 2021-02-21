@@ -235,13 +235,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     $sendgrid_message->setFrom($data['from']);
 
     # Set the from address and add a name if it exists.
-    if (!empty($data['fromname'])) {
-      $sendgrid_message->setFromName($data['fromname']);
-      $sendgrid_message->setFrom($data['from'], $data['fromname']);
-    }
-    else {
-      $sendgrid_message->setFrom($data['from']);
-    }
+    $sendgrid_message->setFrom($data['from'], !empty($data['fromname'] ? $data['fromname'] : NULL));
 
     // If there are multiple recipients we have to explode and walk the values.
     if (strpos($message['to'], ',')) {
@@ -440,10 +434,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     // -----------------------
 
     // Prepare message attachments and params attachments.
-    $attachments = [];
     if (isset($message['attachments']) && !empty($message['attachments'])) {
-
-
       foreach ($message['attachments'] as $attachmentitem) {
         if (is_file($attachmentitem)) {
           try {
