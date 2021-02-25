@@ -590,14 +590,17 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     // Creating hook, allowing other modules react on sent email.
     $hook_args = [$message['to'], $response];
     $this->moduleHandler->invokeAll('sendgrid_integration_sent', $hook_args);
-
-    if ($response->getCode() == 200) {
+    $good_response_codes = [
+      200,
+      202
+    ];
+    if (in_array($response->getCode(), $good_response_codes)) {
       // If the code is 200 we are good to finish and proceed.
       return TRUE;
     }
     // Default to low. Sending failed.
     $this->logger->error('Sending emails to Sendgrid service failed with error message %message.',
-      ['%message' => $response->getBody()->errors[0]->message()]);
+      ['%message' => 'Response Code: ' . $response->getCode() . "\n" . $response->getBody()]);
     return FALSE;
   }
 
