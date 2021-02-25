@@ -495,8 +495,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
             catch (\Exception $e) {
               $this->logger->error('Error processing attachments' . $e->getMessage());
             }
-
-
             $sendgrid_message->addAttachment($attach);
           }
         }
@@ -505,7 +503,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
         elseif (isset($attachment['filecontent'])) {
           $attach->setFilename($attachment['filename']);
           $attach->setType($attachment['filemime']);
-          $attach->setContent(chunk_split(base64_encode($attachment['filecontent'])));
+          $attach->setContent(base64_encode($attachment['filecontent']));
           $sendgrid_message->addAttachment($attach);
         }
       }
