@@ -439,6 +439,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     // END - BCC and CC Address Handling
     // -----------------------
 
+    $shit = 1;
     // Prepare message attachments and params attachments.
     if (isset($message['attachments']) && !empty($message['attachments'])) {
       foreach ($message['attachments'] as $attachmentitem) {
@@ -753,15 +754,14 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       throw new \Exception($path . ' is not a valid file.');
     }
     $filename = basename($path);
-    $file_buffer = file_get_contents($path);
-    $file_buffer = chunk_split(base64_encode($file_buffer), 76, "\n");
+    $file_content = base64_encode(file_get_contents($path));
     $mime_type = $this->mimeTypeGuesser->guess($path);
     if (!$this->isValidContentType($mime_type)) {
       throw new \Exception($mime_type . ' is not a valid content type.');
     }
     $struct['type'] = $mime_type;
     $struct['filename'] = $filename;
-    $struct['content'] = $file_buffer;
+    $struct['content'] = $file_content;
     return $struct;
   }
 
