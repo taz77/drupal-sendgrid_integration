@@ -165,7 +165,7 @@ class SendGridTestForm extends FormBase {
     else {
       $from = $site_settings->get('mail');
     }
-    $result = $this->mailManager->mail('sendgrid_integration', 'test', $config->get('test_defaults.to'), $this->languageManager->getDefaultLanguage()
+    $result = $this->mailManager->mail('sendgrid_integration', 'sengrid_integration_troubleshooting_test', $config->get('test_defaults.to'), $this->languageManager->getDefaultLanguage()
       ->getId(), $params, $from);
     if (isset($result['result']) && $result['result'] == TRUE) {
       $this->messenger->addMessage($this->t('SendGrid test email sent from %from to %to.', [

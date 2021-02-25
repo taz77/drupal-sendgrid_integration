@@ -439,7 +439,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     // END - BCC and CC Address Handling
     // -----------------------
 
-    $shit = 1;
     // Prepare message attachments and params attachments.
     if (isset($message['attachments']) && !empty($message['attachments'])) {
       foreach ($message['attachments'] as $attachmentitem) {
@@ -593,9 +592,15 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     $this->moduleHandler->invokeAll('sendgrid_integration_sent', $hook_args);
     $good_response_codes = [
       200,
-      202
+      202,
     ];
     if (in_array($response->getCode(), $good_response_codes)) {
+      // In the special case the email is coming from the module test we log
+      // an info level message.
+      if (isset($message['key']) && $message['key'] == 'sengrid_integration_troubleshooting_test') {
+        $this->logger->info('Troubleshooting test email has been sent to %address.',
+          ['%address' => $message['to']]);
+      }
       // If the code is 200 we are good to finish and proceed.
       return TRUE;
     }
