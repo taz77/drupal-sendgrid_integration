@@ -7,6 +7,19 @@ This is a major breaking change.
 Some changes
 * Unique Args have been removed by Sendgrid
 
+Tracking of opens and clicks are now off by default. Can be enabled in the
+setting UI of the module.
+
+To upgrade from 8.x-1.x do the following
+```shell
+composer require drupal/sendgrid_integration:2.x --with-all-dependencies
+```
+What you should see change is the module code, composer.json, and composer.lock
+in your main code base. If you have your vendor folder under souce control you
+will see sendgrid/smtpapi be deleted and nearly all code change for 
+fastglass/sendgrid-php-ng. You may see starkbank/ecdsa get added as a transient
+dependency.
+
 
 7.x-1.0-beta3
 ================================================================================
