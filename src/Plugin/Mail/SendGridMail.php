@@ -453,7 +453,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
             $sendgrid_message->addAttachment($attach);
           }
           catch (SendgridException $e) {
-            $this->logger->error('Attachment processing failed' . $e->getMessage());
+            $message = Xss::filter($e->getMessage());
+            $this->logger->error('Attachment processing failed' . $message);
           }
           catch (\Exception $e) {
             $this->logger->error('Attachment processing failed' . $e->getMessage());
@@ -487,7 +488,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
               $attach->setDisposition("attachment");
             }
             catch (SendgridException $e) {
-              $json = json_decode($e->getMessage());
+              $json = json_decode(Xss::filter($e->getMessage()));
               if ($e instanceof SendgridException) {
                 $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
               }
@@ -561,8 +562,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $response = $client->send($sendgrid_message);
     }
     catch (SendgridException $e) {
-      $this->logger->error('Sending emails to Sendgrid service failed with error code ' . $e->getCode());
-      $json = json_decode($e->getMessage());
+      $this->logger->error('Sending emails to Sendgrid service failed with error code ' . Xss::filter($e->getCode()));
+      $json = json_decode(Xss::filter$e->getMessage());
       if ($e instanceof SendgridException) {
         $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
       }
