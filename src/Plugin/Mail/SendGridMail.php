@@ -563,7 +563,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
     catch (SendgridException $e) {
       $this->logger->error('Sending emails to Sendgrid service failed with error code ' . Xss::filter($e->getCode()));
-      $json = json_decode(Xss::filter$e->getMessage());
+      $json = json_decode(Xss::filter($e->getMessage()));
       if ($e instanceof SendgridException) {
         $this->logger->error(json_encode($json, JSON_PRETTY_PRINT));
       }
