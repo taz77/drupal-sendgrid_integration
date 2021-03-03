@@ -228,10 +228,20 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     // If there are multiple recipients we use a different method for To:
     if (strpos($message['to'], ',')) {
       $sendtosarry = explode(',', $message['to']);
-      // Don't bother putting anything in "to" and "toName" for
-      // multiple addresses. Only put multiple addresses in the Smtp header.
-      // For multi addresses as per https://packagist.org/packages/fastglass/sendgrid
-      $sendgrid_message->addTo($sendtosarry);
+      // Use multiple `addSmtpapiTo`s as a superior alternative to `setBcc`.
+      // As per email spec the addTo can be empty for that use case.
+      // See https://sendgrid.com/docs/for-developers/sending-email/building-an-x-smtpapi-header/#bcc-behavior
+      if (!isset($message['sendgrid']['smtpapito']['bcc'])) {
+        // Don't bother putting anything in "to" and "toName" for
+        // multiple addresses. Only put multiple addresses in the Smtp header.
+        // For multi addresses as per https://packagist.org/packages/fastglass/sendgrid
+        $sendgrid_message->addTo($sendtosarry);
+      }
+      else {
+        // Add SmtAPi header instead if we want BCC like method, see
+        // https://github.com/taz77/sendgrid-php-ng/tree/1.0.12#bcc.
+        $sendgrid_message->setSmtpapiTos($sendtosarry);
+      }
     }
     else {
       $toaddrarray = $this->parseAddress($message['to']);
