@@ -189,9 +189,9 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
 
     # Add UID metadata to the message that matches the drupal user ID.
-    if (isset($message['params']['account']->uid)) {
-      $sendgrid_message->addCustomArg("uid", strval($message['params']['account']->uid));
-    }
+    // if (isset($message['params']['account']->uid)) {
+    //   $sendgrid_message->addCustomArg("uid", strval($message['params']['account']->uid));
+    // }
 
     // Checking if 'From' email-address already exists.
     if (isset($message['headers']['From'])) {
