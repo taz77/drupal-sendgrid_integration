@@ -164,8 +164,11 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $sendgrid_message->addFilter('bypass_list_management', 'enable', 1);
     }
 
-    if (isset($message['params']['account']->uid)) {
-      $unique_args['uid'] = $message['params']['account']->uid;
+    # Add UID metadata to the message that matches the drupal user ID.
+    if (isset($message['params']['account'])) {
+      $mailuser = $message['params']['account'];
+      $uid = $mailuser->get('uid')->value;
+      $unique_args['uid'] = strval($uid);
     }
 
     // Allow other modules to modify unique arguments.
