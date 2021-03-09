@@ -9,7 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class SendGridReportsSettingsForm.
+ * Class for Sendgrid reports settings form.
  *
  * @package Drupal\sendgrid_integration_reports\Form
  */
