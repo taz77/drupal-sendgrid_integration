@@ -5,3 +5,14 @@ services:
       - { name: cache.bin }
     factory: cache_factory:get
     arguments: [ sendgrid_integration_reports ]
+  sendgrid_integration_reports.api:
+    class: Drupal\sendgrid_integration_reports\Api
+    tags:
+      - { name: sendgrid }
+    arguments: [
+      '@config.factory',
+      '@messenger',
+      '@logger.factory',
+      '@module_handler',
+      '@cache_factory'
+    ]
