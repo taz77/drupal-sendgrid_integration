@@ -209,7 +209,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     ];
 
     // Allow other modules to modify categories.
-    $this->moduleHandler->invokeAll('sendgrid_integration_categories_alter', [
+    $result = $this->moduleHandler->invokeAll('sendgrid_integration_categories_alter', [
       $message,
       $categories,
     ]);
