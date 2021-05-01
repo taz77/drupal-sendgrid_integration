@@ -5,9 +5,9 @@ namespace Drupal\sendgrid_integration_reports;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Cache\CacheFactory;
+use Drupal\Core\Cache\CacheFactoryInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
@@ -63,7 +63,7 @@ class Api {
   /**
    * The cache factory service.
    *
-   * @var \Drupal\Core\Cache\CacheFactory
+   * @var \Drupal\Core\Cache\CacheFactoryInterface
    */
   protected $cacheFactory;
 
@@ -74,14 +74,14 @@ class Api {
    *   The configuration factory.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
-   * @param \Drupal\Core\Logger\LoggerChannelFactory $logger_factory
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
-   * @param \Drupal\Core\Cache\CacheFactory $cacheFactory
+   * @param \Drupal\Core\Cache\CacheFactoryInterface $cacheFactory
    *   The cache factory service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MessengerInterface $messenger, LoggerChannelFactory $logger_factory, ModuleHandlerInterface $moduleHandler, CacheFactory $cacheFactory) {
+  public function __construct(ConfigFactoryInterface $config_factory, MessengerInterface $messenger, LoggerChannelFactoryInterface $logger_factory, ModuleHandlerInterface $moduleHandler, CacheFactoryInterface $cacheFactory) {
     $this->configFactory = $config_factory;
     $this->messenger = $messenger;
     $this->loggerFactory = $logger_factory;
