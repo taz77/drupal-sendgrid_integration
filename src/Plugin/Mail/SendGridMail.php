@@ -142,8 +142,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    */
   public function mail(array $message): bool {
     # Begin by creating instances of objects needed.
-    $personalization0 = new Personalization();
     $sendgrid_message = new Mail();
+    $personalization0 = $sendgrid_message->getPersonalization();
     $sandbox_mode = new SandBoxMode();
 
     $site_config = $this->configFactory->get('system.site');
