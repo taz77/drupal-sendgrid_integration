@@ -1,5 +1,5 @@
 {
-  "name": "drupal/contrib/sendgrid_integration",
+  "name": "drupal/sendgrid_integration",
   "description": "SendGrid Integration Drupal Module.",
   "homepage": "https://www.drupal.org/project/sendgrid_integration",
   "license": "GNU",
