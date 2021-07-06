@@ -246,7 +246,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $sendtosarry = explode(',', $message['to']);
       foreach ($sendtosarry as $value) {
         $sendtoarrayparsed = $this->parseAddress($value);
-        $personalization0->addTo(new To($sendtoarrayparsed[0], isset($sendtoarrayparsed[1])) ? $sendtoarrayparsed[1] : NULL);
+        $personalization0->addTo(new To($sendtoarrayparsed[0], isset($sendtoarrayparsed[1]) ? $sendtoarrayparsed[1] : NULL));
       }
     }
     else {
