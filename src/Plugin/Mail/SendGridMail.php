@@ -142,8 +142,8 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    */
   public function mail(array $message): bool {
     # Begin by creating instances of objects needed.
-    $personalization0 = new Personalization();
     $sendgrid_message = new Mail();
+    $personalization0 = $sendgrid_message->getPersonalization();
     $sandbox_mode = new SandBoxMode();
 
     $site_config = $this->configFactory->get('system.site');
@@ -224,7 +224,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     ];
 
     // Allow other modules to modify categories.
-    $this->moduleHandler->invokeAll('sendgrid_integration_categories_alter', [
+    $result = $this->moduleHandler->invokeAll('sendgrid_integration_categories_alter', [
       $message,
       $categories,
     ]);
