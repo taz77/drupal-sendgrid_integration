@@ -528,9 +528,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       }
     }
 
-    // Add the finished personalization object.
-    $sendgrid_message->addPersonalization($personalization0);
-
     // Tracking settings.
     $tracking_settings = new TrackingSettings();
     $click_tracking = new ClickTracking();
