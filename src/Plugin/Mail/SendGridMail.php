@@ -149,13 +149,19 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     $site_config = $this->configFactory->get('system.site');
     $sendgrid_config = $this->configFactory->get('sendgrid_integration.settings');
 
-    $key_secret = $sendgrid_config->get('apikey');
-    if ($this->moduleHandler->moduleExists('key')) {
-      $key = \Drupal::service('key.repository')->getKey($key_secret);
-      if ($key) {
-        $key_value = $key->getKeyValue();
-        if ($key_value) {
-          $key_secret = $key_value;
+    if (isset($message['params']['apikey'])) {
+      $key_secret = $message['params']['apikey'];
+      unset($message['apikey']);
+    }
+    else {
+      $key_secret = $sendgrid_config->get('apikey');
+      if ($this->moduleHandler->moduleExists('key')) {
+        $key = \Drupal::service('key.repository')->getKey($key_secret);
+        if ($key) {
+          $key_value = $key->getKeyValue();
+          if ($key_value) {
+            $key_secret = $key_value;
+          }
         }
       }
     }
