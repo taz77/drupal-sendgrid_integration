@@ -96,7 +96,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
    *   The plugin implementation definition.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory service.
-   * @param \Drupal\Core\logger\LoggerChannelFactoryInterface $loggerChannelFactory
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerChannelFactory
    *   The logger channel factory service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
@@ -200,6 +200,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
     # Add UID metadata to the message that matches the drupal user ID.
     if (isset($message['params']['account']->uid)) {
+      /** @var \Drupal\user\Entity\User $mailuser */
       $mailuser = $message['params']['account'];
       $uid = $mailuser->get('uid')->value;
       $sendgrid_message->addCustomArg("uid", strval($uid));
@@ -768,7 +769,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
     $filename = basename($path);
     $file_content = base64_encode(file_get_contents($path));
-    $mime_type = $this->mimeTypeGuesser->guess($path);
+    $mime_type = $this->mimeTypeGuesser->guessMimeType($path);
     if (!$this->isValidContentType($mime_type)) {
       throw new \Exception($mime_type . ' is not a valid content type.');
     }
