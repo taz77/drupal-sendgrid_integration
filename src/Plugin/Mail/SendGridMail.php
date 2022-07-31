@@ -183,6 +183,9 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     $client = new Client($key_secret, $options);
 
     $sitename = $site_config->get('name');
+    if (!mb_check_encoding($sitename, 'ASCII')) {
+      $sitename = urlencode($sitename);
+    }
 
     // If this is a password reset. Bypass spam filters.
     if (strpos($message['id'], 'password')) {
