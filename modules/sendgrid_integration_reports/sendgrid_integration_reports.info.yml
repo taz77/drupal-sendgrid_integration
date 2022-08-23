@@ -1,8 +1,7 @@
 name: 'SendGrid Integration Reports'
 description: 'SendGrid Integration Reports Module'
 type: module
-core: 8.x
-core_version_requirement: ^8 || ^9 || ^10
+core_version_requirement: ^9 || ^10
 package: 'Mail'
 configure: sendgrid_integration_reports.settings_form
 dependencies:
