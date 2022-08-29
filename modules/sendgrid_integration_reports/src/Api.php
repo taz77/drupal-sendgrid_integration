@@ -278,11 +278,6 @@ class Api {
       return [];
     }
 
-    // Get config.
-    $config = $this
-      ->configFactory
-      ->get('sendgrid_integration_reports.settings')
-      ->get();
     // Set start date and end date for global stats - default 30 days back.
     $start_date = empty($config['start_date']) ? date('Y-m-d', strtotime('today - 30 days')) : $config['start_date'];
     $end_date = empty($config['end_date']) ? date('Y-m-d', strtotime('today')) : $config['end_date'];
@@ -296,14 +291,14 @@ class Api {
     ];
 
     // Lets try and retrieve the browser statistics.
-    $stats_data = $this->getResponse($path, $query);
+    $statsdata = $this->getResponse($path, $query);
     if (!$stats_data) {
       return [];
     }
     $data = [];
     // Determine all browsers. Nested foreach to
     // iterate over all data returned per aggregation.
-    foreach ($stats_data as $item) {
+    foreach ($statsdata as $item) {
       foreach ($item->stats as $inneritem) {
         if (array_key_exists($inneritem->name, $data)) {
           $data[$inneritem->name] += $inneritem->metrics->clicks;
@@ -334,11 +329,6 @@ class Api {
       return FALSE;
     }
 
-    // Get config.
-    $config = $this
-      ->configFactory
-      ->get('sendgrid_integration_reports.settings')
-      ->get();
     // Set start date and end date for global stats - default 30 days back.
     $start_date = empty($config['start_date']) ? date('Y-m-d', strtotime('today - 30 days')) : $config['start_date'];
     $end_date = empty($config['end_date']) ? date('Y-m-d', strtotime('today')) : $config['end_date'];
@@ -353,14 +343,14 @@ class Api {
     ];
 
     // Lets try and retrieve the browser statistics.
-    $stats_data = $this->getResponse($path, $query);
+    $statsdata = $this->getResponse($path, $query);
     if (!$stats_data) {
       return [];
     }
     $data = [];
     // Determine all browsers. Nested foreach to
     // iterate over all data returned per aggregation.
-    foreach ($stats_data as $item) {
+    foreach ($statsdata as $item) {
       foreach ($item->stats as $inneritem) {
         if (array_key_exists($inneritem->name, $data)) {
           $data[$inneritem->name] += $inneritem->metrics->opens;
