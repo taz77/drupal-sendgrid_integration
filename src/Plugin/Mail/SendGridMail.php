@@ -272,6 +272,9 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       $personalization0->addTo(new To($toaddrarray[0], $toname));
     }
 
+    // Empty array to process addresses from mail headers.
+    $address_cc_bcc = [];
+
     // Beginning of consolidated header parsing.
     foreach ($message['headers'] as $key => $value) {
       switch (mb_strtolower($key)) {
@@ -425,8 +428,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       // -----------------------
       // Array to use for processing bcc and cc options.
       $cc_bcc_keys = ['cc', 'bcc'];
-      // Empty array to process addresses.
-      $address_cc_bcc = [];
 
       // Handle latter case issue for cc and bcc key.
       if (in_array(mb_strtolower($key), $cc_bcc_keys)) {
