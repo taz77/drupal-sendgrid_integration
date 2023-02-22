@@ -348,14 +348,14 @@ class Api {
     ];
 
     // Lets try and retrieve the browser statistics.
-    $statsdata = $this->getResponse($path, $query);
+    $stats_data = $this->getResponse($path, $query);
     if (!$stats_data) {
       return [];
     }
     $data = [];
     // Determine all browsers. Nested foreach to
     // iterate over all data returned per aggregation.
-    foreach ($statsdata as $item) {
+    foreach ($stats_data as $item) {
       foreach ($item->stats as $inneritem) {
         if (array_key_exists($inneritem->name, $data)) {
           $data[$inneritem->name] += $inneritem->metrics->opens;
