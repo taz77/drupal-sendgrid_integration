@@ -138,10 +138,34 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}
-   * @throws \SendGrid\Exception\SendgridException
    */
   public function mail(array $message): bool {
-    # Begin by creating instances of objects needed.
+    // Set mail to false by default.
+    $mail = FALSE;
+    try {
+      // The doMail function returns a boolean.
+      $mail = $this->doMail($message);
+    }
+    // Log the exception.
+    catch (SendgridException $e) {
+      $this->logger->error($e->getMessage());
+    }
+    return $mail;
+  }
+
+  /**
+   * Worker method for ::mail.
+   *
+   * @param array $message
+   *   The message array.
+   *
+   * @return bool
+   *   True if the message is sent.
+   *
+   * @throws \SendGrid\Exception\SendgridException
+   */
+  protected function doMail(array $message): bool {
+    // Begin by creating instances of objects needed.
     $sendgrid_message = new Mail();
     $personalization0 = $sendgrid_message->getPersonalization();
     $sandbox_mode = new SandBoxMode();
