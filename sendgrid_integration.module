@@ -10,6 +10,12 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Site\Settings;
 
+// Ludwig module integration.
+if (\Drupal::hasService('ludwig.require_once')) {
+  $ludwig_require_once = \Drupal::service('ludwig.require_once');
+  $ludwig_require_once->requireOnce('starkbank/ecdsa', 'src/ellipticcurve.php', dirname(__FILE__));
+}
+
 /**
  * Implements hook_help().
  */
