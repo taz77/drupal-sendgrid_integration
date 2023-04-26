@@ -457,6 +457,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       if (in_array(mb_strtolower($key), $cc_bcc_keys)) {
         $mail_ids = explode(',', $value);
         foreach ($mail_ids as $mail_id) {
+          $mail_id = trim($mail_id);
           $email_components = $this->parseAddress($mail_id);
           $mail_cc_address = $email_components[0];
           // If there was a name with the mail,
