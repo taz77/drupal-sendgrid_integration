@@ -146,7 +146,7 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
       // The doMail function returns a boolean.
       $mail = $this->doMail($message);
     }
-    // Log the exception.
+      // Log the exception.
     catch (SendgridException $e) {
       $this->logger->error($e->getMessage());
     }
@@ -652,6 +652,24 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
   }
 
   /**
+   * Split an email address into it's name and address components.
+   * Returns an array with the first element as the email address and the
+   * second element as the name.
+   *
+   * @param $email string
+   *
+   * @return mixed
+   */
+  protected function parseAddress(string $email) {
+    if (preg_match(self::SENDGRID_INTEGRATION_EMAIL_REGEX, $email, $matches)) {
+      return [$matches[2], strval($matches[1])];
+    }
+    else {
+      return [$email];
+    }
+  }
+
+  /**
    * Returns a string that is contained within another string.
    *
    * Returns the string from within $source that is some where after $target
@@ -763,24 +781,6 @@ class SendGridMail implements MailInterface, ContainerFactoryPluginInterface {
     }
 
     return implode("\n", $part_array);
-  }
-
-  /**
-   * Split an email address into it's name and address components.
-   * Returns an array with the first element as the email address and the
-   * second element as the name.
-   *
-   * @param $email string
-   *
-   * @return mixed
-   */
-  protected function parseAddress(string $email) {
-    if (preg_match(self::SENDGRID_INTEGRATION_EMAIL_REGEX, $email, $matches)) {
-      return [$matches[2], strval($matches[1])];
-    }
-    else {
-      return [$email];
-    }
   }
 
   /**
